@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Site Studio 2026</title>
+    <title>Site Studio 2026 - 完全動作版</title>
     <style>
         * {
             margin: 0;
@@ -176,6 +175,14 @@
             font-size: 0.7rem;
             resize: vertical;
         }
+        .small-btn {
+            background: #e9e9ef;
+            border: none;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
         button.download {
             background: #007aff;
             color: white;
@@ -211,7 +218,7 @@
 <div class="container">
     <div class="generator-header">
         <h1>Site Studio 2026</h1>
-        <p>フォーム送信先メール・電話番号対応 / 自由なサブコンテンツ</p>
+        <p>完全動作版 / リアルタイムプレビュー / ZIP出力</p>
     </div>
     <div class="two-columns">
         <!-- 左: 設定パネル -->
@@ -250,9 +257,18 @@
             <div class="check-group"><input type="checkbox" id="secSub" checked> サブコンテンツ</div>
             <div class="check-group"><input type="checkbox" id="secGallery"> ギャラリー (3枚)</div>
             <div id="galleryUrls" style="margin-left:1rem; display:none;">
-                <div class="image-row"><input type="text" id="gal1" placeholder="画像URL 1"><button class="small-btn random-img" data-target="gal1">ランダム</button></div>
-                <div class="image-row"><input type="text" id="gal2" placeholder="画像URL 2"><button class="small-btn random-img" data-target="gal2">ランダム</button></div>
-                <div class="image-row"><input type="text" id="gal3" placeholder="画像URL 3"><button class="small-btn random-img" data-target="gal3">ランダム</button></div>
+                <div class="image-row" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+                    <input type="text" id="gal1" placeholder="画像URL 1" style="flex:3;">
+                    <button class="small-btn random-img" data-target="gal1">ランダム</button>
+                </div>
+                <div class="image-row" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+                    <input type="text" id="gal2" placeholder="画像URL 2" style="flex:3;">
+                    <button class="small-btn random-img" data-target="gal2">ランダム</button>
+                </div>
+                <div class="image-row" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+                    <input type="text" id="gal3" placeholder="画像URL 3" style="flex:3;">
+                    <button class="small-btn random-img" data-target="gal3">ランダム</button>
+                </div>
             </div>
             <div class="check-group"><input type="checkbox" id="secContactInfo"> 連絡先表示</div>
             <div id="contactInfoDiv" style="margin-left:1rem; display:none;">
@@ -292,284 +308,340 @@
 </div>
 
 <script>
-    // ---------- グラデーションプリセット ----------
-    const gradients = {
-        "シルバー": "linear-gradient(145deg, #f5f5f7, #e8e8ed)",
-        "ブルー": "linear-gradient(135deg, #eef2ff, #d9e2ff)",
-        "スペースグレイ": "linear-gradient(135deg, #2c2c2e, #1c1c1e)",
-        "サンセット": "linear-gradient(135deg, #ffd6b0, #ffb88c)"
-    };
-    let currentBgType = 'color';
-    let bgColor = '#ffffff';
-    let selectedGradient = gradients["シルバー"];
-    let customGradient = '';
-    let bgImageUrl = '', bgRepeat = 'cover';
-    let heroTitle = 'Welcome', heroDesc = '洗練されたデザインのサイトを生成します。';
-    let showHero = true, showSub = true, showGallery = false, showContactInfo = false, showForm = false, showCta = false;
-    let galleryUrls = ['', '', ''];
-    let displayContact = { mail: '', tel: '', address: '' };
-    let formReceiverEmail = 'info@example.com';
-    let headingSize = 2, btnColor = '#007aff', btnText = '送信', ctaText = '詳細を見る';
-    let copyrightName = '';
-    // サブコンテンツブロック
-    let subBlocks = [
-        { title: "革新的なデザイン", content: "美しく直感的なレイアウトを提供します。", imgUrl: "", fontSize: 1, bgColor: "#ffffff" }
-    ];
-    // 法務項目リスト
-    let legalItems = [
-        { id: "terms", label: "利用規約", enabled: true, content: "ここに利用規約の内容を記述してください。\n禁止事項、免責事項などを含みます。" },
-        { id: "privacy", label: "プライバシーポリシー", enabled: true, content: "個人情報の収集、利用目的、第三者提供についてのポリシーです。" },
-        { id: "specCommercial", label: "特定商取引法に基づく表示", enabled: true, content: "販売業者名、代表者、所在地、連絡先、販売価格、支払方法、返品について。" },
-        { id: "disclaimer", label: "免責事項", enabled: true, content: "当サイトの情報の正確性には注意を払っていますが、利用者が被った損害について責任を負いません。" },
-        { id: "contactLegal", label: "お問い合わせ先（法人情報）", enabled: true, content: "運営会社名、メールアドレス、電話番号などを記載してください。" }
-    ];
+    (function() {
+        // ========== グラデーション定義 ==========
+        const gradients = {
+            "シルバー": "linear-gradient(145deg, #f5f5f7, #e8e8ed)",
+            "ブルー": "linear-gradient(135deg, #eef2ff, #d9e2ff)",
+            "スペースグレイ": "linear-gradient(135deg, #2c2c2e, #1c1c1e)",
+            "サンセット": "linear-gradient(135deg, #ffd6b0, #ffb88c)"
+        };
+        
+        // ========== 状態変数 ==========
+        let currentBgType = 'color';
+        let bgColor = '#ffffff';
+        let selectedGradient = gradients["シルバー"];
+        let customGradient = '';
+        let bgImageUrl = '', bgRepeat = 'cover';
+        let heroTitle = 'Welcome', heroDesc = '洗練されたデザインのサイトを生成します。';
+        let showHero = true, showSub = true, showGallery = false, showContactInfo = false, showForm = false, showCta = false;
+        let galleryUrls = ['', '', ''];
+        let displayContact = { mail: '', tel: '', address: '' };
+        let formReceiverEmail = 'info@example.com';
+        let headingSize = 2, btnColor = '#007aff', btnText = '送信', ctaText = '詳細を見る';
+        let copyrightName = '';
+        let subBlocks = [
+            { title: "革新的なデザイン", content: "美しく直感的なレイアウトを提供します。", imgUrl: "", fontSize: 1, bgColor: "#ffffff" }
+        ];
+        let legalItems = [
+            { id: "terms", label: "利用規約", enabled: true, content: "ここに利用規約の内容を記述してください。\n禁止事項、免責事項などを含みます。" },
+            { id: "privacy", label: "プライバシーポリシー", enabled: true, content: "個人情報の収集、利用目的、第三者提供についてのポリシーです。" },
+            { id: "specCommercial", label: "特定商取引法に基づく表示", enabled: true, content: "販売業者名、代表者、所在地、連絡先、販売価格、支払方法、返品について。" },
+            { id: "disclaimer", label: "免責事項", enabled: true, content: "当サイトの情報の正確性には注意を払っていますが、利用者が被った損害について責任を負いません。" },
+            { id: "contactLegal", label: "お問い合わせ先（法人情報）", enabled: true, content: "運営会社名、メールアドレス、電話番号などを記載してください。" }
+        ];
 
-    // DOM要素取得
-    const bgTypeSelect = document.getElementById('bgType');
-    const colorRow = document.getElementById('colorRow');
-    const gradientRow = document.getElementById('gradientRow');
-    const imageRow = document.getElementById('imageRow');
-    const bgColorInput = document.getElementById('bgColor');
-    const gradTabsDiv = document.getElementById('gradTabs');
-    const gradPreview = document.getElementById('gradPreview');
-    const customGradInput = document.getElementById('customGradient');
-    const bgImageInput = document.getElementById('bgImageUrl');
-    const bgRepeatSelect = document.getElementById('bgRepeat');
-    const heroTitleInp = document.getElementById('heroTitle');
-    const heroDescInp = document.getElementById('heroDesc');
-    const chkHero = document.getElementById('secHero'), chkSub = document.getElementById('secSub'), chkGallery = document.getElementById('secGallery');
-    const chkContact = document.getElementById('secContactInfo'), chkForm = document.getElementById('secForm'), chkCta = document.getElementById('secCta');
-    const galleryDiv = document.getElementById('galleryUrls'), contactDiv = document.getElementById('contactInfoDiv');
-    const formSettingsDiv = document.getElementById('formSettings');
-    const galInputs = [document.getElementById('gal1'), document.getElementById('gal2'), document.getElementById('gal3')];
-    const displayMail = document.getElementById('displayMail'), displayTel = document.getElementById('displayTel'), displayAddress = document.getElementById('displayAddress');
-    const formReceiverInput = document.getElementById('formReceiverEmail');
-    const headingSlider = document.getElementById('headingSize'), headingVal = document.getElementById('headingSizeVal');
-    const btnColorPicker = document.getElementById('btnColor'), btnTextInp = document.getElementById('btnText'), ctaTextInp = document.getElementById('ctaText');
-    const copyrightInp = document.getElementById('copyrightName');
-    const legalContainer = document.getElementById('legalItemsContainer');
+        // ========== DOM 要素取得 ==========
+        const bgTypeSelect = document.getElementById('bgType');
+        const colorRow = document.getElementById('colorRow');
+        const gradientRow = document.getElementById('gradientRow');
+        const imageRow = document.getElementById('imageRow');
+        const bgColorInput = document.getElementById('bgColor');
+        const gradTabsDiv = document.getElementById('gradTabs');
+        const gradPreview = document.getElementById('gradPreview');
+        const customGradInput = document.getElementById('customGradient');
+        const bgImageInput = document.getElementById('bgImageUrl');
+        const bgRepeatSelect = document.getElementById('bgRepeat');
+        const heroTitleInp = document.getElementById('heroTitle');
+        const heroDescInp = document.getElementById('heroDesc');
+        const chkHero = document.getElementById('secHero');
+        const chkSub = document.getElementById('secSub');
+        const chkGallery = document.getElementById('secGallery');
+        const chkContact = document.getElementById('secContactInfo');
+        const chkForm = document.getElementById('secForm');
+        const chkCta = document.getElementById('secCta');
+        const galleryDiv = document.getElementById('galleryUrls');
+        const contactDiv = document.getElementById('contactInfoDiv');
+        const formSettingsDiv = document.getElementById('formSettings');
+        const galInputs = [document.getElementById('gal1'), document.getElementById('gal2'), document.getElementById('gal3')];
+        const displayMail = document.getElementById('displayMail');
+        const displayTel = document.getElementById('displayTel');
+        const displayAddress = document.getElementById('displayAddress');
+        const formReceiverInput = document.getElementById('formReceiverEmail');
+        const headingSlider = document.getElementById('headingSize');
+        const headingVal = document.getElementById('headingSizeVal');
+        const btnColorPicker = document.getElementById('btnColor');
+        const btnTextInp = document.getElementById('btnText');
+        const ctaTextInp = document.getElementById('ctaText');
+        const copyrightInp = document.getElementById('copyrightName');
+        const legalContainer = document.getElementById('legalItemsContainer');
+        const subContainer = document.getElementById('subcontentList');
+        const addSubBtn = document.getElementById('addSubBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const previewFrame = document.getElementById('previewFrame');
 
-    function escapeHtml(str) {
-        return str.replace(/[&<>]/g, function(m){
-            if(m==='&') return '&amp;';
-            if(m==='<') return '&lt;';
-            if(m==='>') return '&gt;';
-            return m;
-        });
-    }
-
-    function renderSubBlocksUI() {
-        const container = document.getElementById('subcontentList');
-        container.innerHTML = '';
-        subBlocks.forEach((block, idx) => {
-            const card = document.createElement('div');
-            card.className = 'subcontent-card';
-            card.innerHTML = `
-                <div class="subcontent-header">
-                    <span>ブロック ${idx+1}</span>
-                    <button class="delete-sub" data-idx="${idx}">✖</button>
-                </div>
-                <div class="subcontent-fields">
-                    <input type="text" placeholder="タイトル" value="${escapeHtml(block.title)}" data-field="title" data-idx="${idx}">
-                    <textarea rows="2" placeholder="内容" data-field="content" data-idx="${idx}">${escapeHtml(block.content)}</textarea>
-                    <input type="text" placeholder="画像URL (任意)" value="${escapeHtml(block.imgUrl)}" data-field="imgUrl" data-idx="${idx}">
-                    <div class="row2">
-                        <div><label>フォントサイズ</label><input type="range" min="0.8" max="1.8" step="0.05" value="${block.fontSize}" data-field="fontSize" data-idx="${idx}"></div>
-                        <div><label>背景色</label><input type="color" value="${block.bgColor}" data-field="bgColor" data-idx="${idx}"></div>
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-        document.querySelectorAll('.delete-sub').forEach(btn => {
-            btn.addEventListener('click', (e) => { 
-                const idx = parseInt(btn.dataset.idx); 
-                subBlocks.splice(idx,1); 
-                renderSubBlocksUI(); 
-                updatePreview(); 
+        // ========== ユーティリティ ==========
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
             });
-        });
-        document.querySelectorAll('[data-field]').forEach(el => {
-            el.addEventListener('input', (e) => {
-                const idx = parseInt(el.dataset.idx);
-                const field = el.dataset.field;
-                if (field === 'fontSize') subBlocks[idx].fontSize = parseFloat(el.value);
-                else if (field === 'bgColor') subBlocks[idx].bgColor = el.value;
-                else subBlocks[idx][field] = el.value;
+        }
+
+        function randomImageUrl() {
+            return `https://picsum.photos/id/${Math.floor(Math.random() * 200)}/600/400`;
+        }
+
+        // ランダムボタンのイベント設定（動的に生成される要素用）
+        function bindRandomButtons() {
+            document.querySelectorAll('.random-img').forEach(btn => {
+                btn.removeEventListener('click', randomClickHandler);
+                btn.addEventListener('click', randomClickHandler);
+            });
+        }
+        function randomClickHandler(e) {
+            const targetId = this.getAttribute('data-target');
+            const targetInput = document.getElementById(targetId);
+            if (targetInput) {
+                targetInput.value = randomImageUrl();
+                updatePreview();
+            }
+        }
+
+        // ========== サブコンテンツUI描画 ==========
+        function renderSubBlocksUI() {
+            subContainer.innerHTML = '';
+            subBlocks.forEach((block, idx) => {
+                const card = document.createElement('div');
+                card.className = 'subcontent-card';
+                card.innerHTML = `
+                    <div class="subcontent-header">
+                        <span>ブロック ${idx + 1}</span>
+                        <button class="delete-sub" data-idx="${idx}">✖</button>
+                    </div>
+                    <div class="subcontent-fields">
+                        <input type="text" placeholder="タイトル" value="${escapeHtml(block.title)}" data-field="title" data-idx="${idx}">
+                        <textarea rows="2" placeholder="内容" data-field="content" data-idx="${idx}">${escapeHtml(block.content)}</textarea>
+                        <input type="text" placeholder="画像URL (任意)" value="${escapeHtml(block.imgUrl)}" data-field="imgUrl" data-idx="${idx}">
+                        <div class="row2">
+                            <div><label>フォントサイズ</label><input type="range" min="0.8" max="1.8" step="0.05" value="${block.fontSize}" data-field="fontSize" data-idx="${idx}"></div>
+                            <div><label>背景色</label><input type="color" value="${block.bgColor}" data-field="bgColor" data-idx="${idx}"></div>
+                        </div>
+                    </div>
+                `;
+                subContainer.appendChild(card);
+            });
+            // 削除ボタンのイベント
+            document.querySelectorAll('.delete-sub').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(btn.getAttribute('data-idx'));
+                    subBlocks.splice(idx, 1);
+                    renderSubBlocksUI();
+                    updatePreview();
+                });
+            });
+            // 入力フィールドのイベント
+            document.querySelectorAll('[data-field]').forEach(el => {
+                el.addEventListener('input', (e) => {
+                    const idx = parseInt(el.getAttribute('data-idx'));
+                    const field = el.getAttribute('data-field');
+                    if (field === 'fontSize') subBlocks[idx].fontSize = parseFloat(el.value);
+                    else if (field === 'bgColor') subBlocks[idx].bgColor = el.value;
+                    else subBlocks[idx][field] = el.value;
+                    updatePreview();
+                });
+            });
+        }
+
+        // ========== 法務UI描画 ==========
+        function renderLegalUI() {
+            legalContainer.innerHTML = '';
+            legalItems.forEach((item, idx) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'legal-check-group';
+                wrapper.innerHTML = `<input type="checkbox" data-legal-idx="${idx}" ${item.enabled ? 'checked' : ''}> <label style="font-weight:500;">${escapeHtml(item.label)}</label>`;
+                const editorDiv = document.createElement('div');
+                editorDiv.className = 'legal-editor';
+                editorDiv.style.display = item.enabled ? 'block' : 'none';
+                editorDiv.innerHTML = `<textarea rows="3" data-legal-text-idx="${idx}">${escapeHtml(item.content)}</textarea>`;
+                wrapper.appendChild(editorDiv);
+                legalContainer.appendChild(wrapper);
+                const chk = wrapper.querySelector('input[type="checkbox"]');
+                chk.addEventListener('change', (e) => {
+                    legalItems[idx].enabled = e.target.checked;
+                    editorDiv.style.display = e.target.checked ? 'block' : 'none';
+                    updatePreview();
+                });
+                const textarea = editorDiv.querySelector('textarea');
+                textarea.addEventListener('input', (e) => {
+                    legalItems[idx].content = e.target.value;
+                    updatePreview();
+                });
+            });
+        }
+
+        // ========== UI表示/非表示切り替え ==========
+        function toggleBgFields() {
+            currentBgType = bgTypeSelect.value;
+            colorRow.style.display = currentBgType === 'color' ? 'flex' : 'none';
+            gradientRow.style.display = currentBgType === 'gradient' ? 'block' : 'none';
+            imageRow.style.display = currentBgType === 'image' ? 'block' : 'none';
+        }
+
+        function toggleSubSettings() {
+            galleryDiv.style.display = showGallery ? 'block' : 'none';
+            contactDiv.style.display = showContactInfo ? 'block' : 'none';
+            formSettingsDiv.style.display = showForm ? 'block' : 'none';
+        }
+
+        // ========== 変数更新 ==========
+        function updateVariables() {
+            bgColor = bgColorInput.value;
+            bgImageUrl = bgImageInput.value;
+            bgRepeat = bgRepeatSelect.value;
+            heroTitle = heroTitleInp.value;
+            heroDesc = heroDescInp.value;
+            showHero = chkHero.checked;
+            showSub = chkSub.checked;
+            showGallery = chkGallery.checked;
+            showContactInfo = chkContact.checked;
+            showForm = chkForm.checked;
+            showCta = chkCta.checked;
+            galleryUrls = galInputs.map(i => i.value);
+            displayContact = { mail: displayMail.value, tel: displayTel.value, address: displayAddress.value };
+            formReceiverEmail = formReceiverInput.value;
+            headingSize = parseFloat(headingSlider.value);
+            headingVal.innerText = headingSize + 'rem';
+            btnColor = btnColorPicker.value;
+            btnText = btnTextInp.value;
+            ctaText = ctaTextInp.value;
+            copyrightName = copyrightInp.value;
+            if (currentBgType === 'gradient') {
+                selectedGradient = customGradInput.value;
+            }
+        }
+
+        function getBackgroundCSS() {
+            if (currentBgType === 'color') return `background: ${bgColor};`;
+            if (currentBgType === 'gradient') return `background: ${selectedGradient};`;
+            if (currentBgType === 'image') {
+                if (bgRepeat === 'cover') return `background: url('${bgImageUrl}') center/cover no-repeat;`;
+                if (bgRepeat === 'contain') return `background: url('${bgImageUrl}') center/contain no-repeat;`;
+                return `background: url('${bgImageUrl}') repeat;`;
+            }
+            return '';
+        }
+
+        // ========== グラデーションタブ構築 ==========
+        function buildGradTabs() {
+            gradTabsDiv.innerHTML = '';
+            for (const [name, grad] of Object.entries(gradients)) {
+                const tab = document.createElement('div');
+                tab.className = 'grad-tab';
+                tab.innerText = name;
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.grad-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    selectedGradient = grad;
+                    customGradInput.value = grad;
+                    gradPreview.style.background = grad;
+                    updatePreview();
+                });
+                gradTabsDiv.appendChild(tab);
+            }
+            customGradInput.addEventListener('input', () => {
+                document.querySelectorAll('.grad-tab').forEach(t => t.classList.remove('active'));
+                selectedGradient = customGradInput.value;
+                gradPreview.style.background = customGradInput.value;
                 updatePreview();
             });
-        });
-    }
-
-    function renderLegalUI() {
-        legalContainer.innerHTML = '';
-        legalItems.forEach((item, idx) => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'legal-check-group';
-            wrapper.innerHTML = `<input type="checkbox" data-legal-idx="${idx}" ${item.enabled ? 'checked' : ''}> <label style="font-weight:500;">${item.label}</label>`;
-            const editorDiv = document.createElement('div');
-            editorDiv.className = 'legal-editor';
-            editorDiv.style.display = item.enabled ? 'block' : 'none';
-            editorDiv.innerHTML = `<textarea rows="3" data-legal-text-idx="${idx}">${escapeHtml(item.content)}</textarea>`;
-            wrapper.appendChild(editorDiv);
-            legalContainer.appendChild(wrapper);
-            const chk = wrapper.querySelector('input[type="checkbox"]');
-            chk.addEventListener('change', (e) => { 
-                legalItems[idx].enabled = e.target.checked; 
-                editorDiv.style.display = e.target.checked ? 'block' : 'none'; 
-                updatePreview(); 
-            });
-            const textarea = editorDiv.querySelector('textarea');
-            textarea.addEventListener('input', (e) => { 
-                legalItems[idx].content = e.target.value; 
-                updatePreview(); 
-            });
-        });
-    }
-
-    function toggleBgFields() { 
-        currentBgType = bgTypeSelect.value; 
-        colorRow.style.display = currentBgType === 'color' ? 'flex' : 'none'; 
-        gradientRow.style.display = currentBgType === 'gradient' ? 'block' : 'none'; 
-        imageRow.style.display = currentBgType === 'image' ? 'block' : 'none'; 
-    }
-
-    function toggleSubSettings() { 
-        galleryDiv.style.display = showGallery ? 'block' : 'none'; 
-        contactDiv.style.display = showContactInfo ? 'block' : 'none'; 
-        formSettingsDiv.style.display = showForm ? 'block' : 'none'; 
-    }
-
-    function updateVariables() {
-        bgColor = bgColorInput.value; 
-        bgImageUrl = bgImageInput.value; 
-        bgRepeat = bgRepeatSelect.value;
-        heroTitle = heroTitleInp.value; 
-        heroDesc = heroDescInp.value;
-        showHero = chkHero.checked; 
-        showSub = chkSub.checked; 
-        showGallery = chkGallery.checked; 
-        showContactInfo = chkContact.checked; 
-        showForm = chkForm.checked; 
-        showCta = chkCta.checked;
-        galleryUrls = galInputs.map(i => i.value);
-        displayContact = { mail: displayMail.value, tel: displayTel.value, address: displayAddress.value };
-        formReceiverEmail = formReceiverInput.value;
-        headingSize = parseFloat(headingSlider.value); 
-        headingVal.innerText = headingSize + 'rem';
-        btnColor = btnColorPicker.value; 
-        btnText = btnTextInp.value; 
-        ctaText = ctaTextInp.value;
-        copyrightName = copyrightInp.value;
-        if (currentBgType === 'gradient') selectedGradient = customGradInput.value;
-    }
-
-    function getBackgroundCSS() {
-        if (currentBgType === 'color') return `background: ${bgColor};`;
-        if (currentBgType === 'gradient') return `background: ${selectedGradient};`;
-        if (currentBgType === 'image') { 
-            if (bgRepeat === 'cover') return `background: url('${bgImageUrl}') center/cover no-repeat;`;
-            if (bgRepeat === 'contain') return `background: url('${bgImageUrl}') center/contain no-repeat;`;
-            return `background: url('${bgImageUrl}') repeat;`;
+            if (gradTabsDiv.firstChild) gradTabsDiv.firstChild.classList.add('active');
+            gradPreview.style.background = gradients["シルバー"];
+            customGradInput.value = gradients["シルバー"];
         }
-        return '';
-    }
 
-    function buildGradTabs() {
-        gradTabsDiv.innerHTML = '';
-        for (const [name, grad] of Object.entries(gradients)) {
-            const tab = document.createElement('div'); 
-            tab.className = 'grad-tab'; 
-            tab.innerText = name;
-            tab.addEventListener('click', () => { 
-                document.querySelectorAll('.grad-tab').forEach(t => t.classList.remove('active')); 
-                tab.classList.add('active'); 
-                selectedGradient = grad; 
-                customGradInput.value = grad; 
-                gradPreview.style.background = grad; 
-                updatePreview(); 
-            });
-            gradTabsDiv.appendChild(tab);
-        }
-        customGradInput.addEventListener('input', () => { 
-            document.querySelectorAll('.grad-tab').forEach(t => t.classList.remove('active')); 
-            selectedGradient = customGradInput.value; 
-            gradPreview.style.background = customGradInput.value; 
-            updatePreview(); 
-        });
-        if (gradTabsDiv.firstChild) gradTabsDiv.firstChild.classList.add('active');
-        gradPreview.style.background = gradients["シルバー"]; 
-        customGradInput.value = gradients["シルバー"];
-    }
-
-    function generateHTML() {
-        updateVariables();
-        const bgCss = getBackgroundCSS();
-        const heroHtml = showHero ? `<div class="hero"><h1>${escapeHtml(heroTitle)}</h1><p class="hero-desc">${escapeHtml(heroDesc)}</p></div>` : '';
-        let subHtml = '';
-        if (showSub && subBlocks.length) {
-            subHtml = `<div class="subcontents">${subBlocks.map(block => `
-                <div class="subcard" style="background: ${block.bgColor};">
-                    ${block.imgUrl ? `<img src="${block.imgUrl}" class="subimg" alt="">` : ''}
-                    <h3 style="font-size: ${block.fontSize}rem;">${escapeHtml(block.title)}</h3>
-                    <p>${escapeHtml(block.content)}</p>
-                </div>
-            `).join('')}</div>`;
-        }
-        let galleryHtml = '';
-        if (showGallery) {
-            let items = '';
-            for (let i=0; i<3; i++) {
-                const url = galleryUrls[i];
-                if (url && url.match(/^https?:\/\//)) items += `<div class="gallery-item"><img src="${url}" alt="gallery"></div>`;
-                else items += `<div class="gallery-item no-img"></div>`;
+        // ========== メイン生成関数 ==========
+        function generateHTML() {
+            updateVariables();
+            const bgCss = getBackgroundCSS();
+            const heroHtml = showHero ? `<div class="hero"><h1>${escapeHtml(heroTitle)}</h1><p class="hero-desc">${escapeHtml(heroDesc)}</p></div>` : '';
+            
+            let subHtml = '';
+            if (showSub && subBlocks.length) {
+                subHtml = `<div class="subcontents">${subBlocks.map(block => `
+                    <div class="subcard" style="background: ${block.bgColor}; border-radius: 24px; padding: 1.2rem; margin-bottom: 1.5rem;">
+                        ${block.imgUrl ? `<img src="${block.imgUrl}" class="subimg" style="width:100%; border-radius:20px; margin-bottom:1rem; max-height:200px; object-fit:cover;" alt="">` : ''}
+                        <h3 style="font-size: ${block.fontSize}rem;">${escapeHtml(block.title)}</h3>
+                        <p>${escapeHtml(block.content)}</p>
+                    </div>
+                `).join('')}</div>`;
             }
-            galleryHtml = `<div class="section"><h2>ギャラリー</h2><div class="gallery">${items}</div></div>`;
-        }
-        let contactHtml = '';
-        if (showContactInfo && (displayContact.mail || displayContact.tel || displayContact.address)) {
-            contactHtml = `<div class="section"><h2>連絡先</h2><div class="contact-detail">${displayContact.mail ? `<p>📧 ${escapeHtml(displayContact.mail)}</p>` : ''}${displayContact.tel ? `<p>📞 ${escapeHtml(displayContact.tel)}</p>` : ''}${displayContact.address ? `<p>🏠 ${escapeHtml(displayContact.address)}</p>` : ''}</div></div>`;
-        }
-        const formHtml = showForm ? `
-        <div class="section"><h2>お問い合わせ</h2>
-        <form class="demo-form" onsubmit="sendInquiry(); return false;">
-            <input type="text" id="formName" placeholder="お名前" required>
-            <input type="email" id="formEmail" placeholder="メールアドレス" required>
-            <input type="tel" id="formPhone" placeholder="電話番号 (任意)">
-            <textarea id="formMessage" rows="3" placeholder="メッセージ" required></textarea>
-            <button type="submit">${escapeHtml(btnText)}</button>
-        </form>
-        <script>
-            function sendInquiry() {
-                const name = document.getElementById('formName').value.trim();
-                const email = document.getElementById('formEmail').value.trim();
-                const phone = document.getElementById('formPhone').value.trim();
-                const message = document.getElementById('formMessage').value.trim();
-                if (!name || !email || !message) { alert('必須項目を入力してください。'); return; }
-                const body = "お名前: " + name + "\\nメールアドレス: " + email + "\\n電話番号: " + phone + "\\nメッセージ: " + message;
-                window.location.href = "mailto:${escapeHtml(formReceiverEmail)}?subject=お問い合わせ from " + encodeURIComponent(name) + "&body=" + encodeURIComponent(body);
-                alert('メールアプリが起動します。送信してください。');
+            
+            let galleryHtml = '';
+            if (showGallery) {
+                let items = '';
+                for (let i = 0; i < 3; i++) {
+                    const url = galleryUrls[i];
+                    if (url && url.match(/^https?:\/\//)) {
+                        items += `<div class="gallery-item" style="flex:1; aspect-ratio:1/1; border-radius:24px; overflow:hidden; background:#f5f5f7;"><img src="${url}" style="width:100%; height:100%; object-fit:cover;" alt="gallery"></div>`;
+                    } else {
+                        items += `<div class="gallery-item no-img" style="flex:1; aspect-ratio:1/1; border-radius:24px; background: repeating-linear-gradient(45deg, #e5e5ea, #e5e5ea 10px, #f5f5f7 10px, #f5f5f7 20px);"></div>`;
+                    }
+                }
+                galleryHtml = `<div class="section"><h2 style="font-size:1.3rem; border-left:4px solid #007aff; padding-left:0.8rem; margin:1.5rem 0 1rem;">ギャラリー</h2><div class="gallery" style="display:flex; gap:1rem; flex-wrap:wrap;">${items}</div></div>`;
             }
-        <\/script>
-        </div>` : '';
-        const ctaHtml = showCta ? `<div class="cta-block"><div class="cta-inner"><h3>${escapeHtml(ctaText)}</h3><button class="cta-btn">${escapeHtml(ctaText)}</button></div></div>` : '';
-        const enabledLegal = legalItems.filter(item => item.enabled);
-        let legalLinksHtml = '', modalsHtml = '';
-        if (enabledLegal.length) {
-            legalLinksHtml = `<div class="legal-links">${enabledLegal.map((item) => `<a href="#" onclick="document.getElementById('modal_${item.id}').style.display='flex';return false;">${escapeHtml(item.label)}</a>`).join(' | ')}</div>`;
-            modalsHtml = enabledLegal.map(item => `
-            <div id="modal_${item.id}" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
-                <div style="background:white; max-width:600px; margin:5% auto; padding:1.5rem; border-radius:24px; max-height:80%; overflow:auto;">
-                    <h3>${escapeHtml(item.label)}</h3>
-                    <p style="white-space:pre-wrap;">${escapeHtml(item.content)}</p>
-                    <button onclick="document.getElementById('modal_${item.id}').style.display='none'">閉じる</button>
-                </div>
-            </div>`).join('');
-        }
-        let copyrightHtml = `© ${new Date().getFullYear()} Site Studio`;
-        if (copyrightName.trim()) copyrightHtml += ` / ${escapeHtml(copyrightName.trim())}`;
+            
+            let contactHtml = '';
+            if (showContactInfo && (displayContact.mail || displayContact.tel || displayContact.address)) {
+                contactHtml = `<div class="section"><h2 style="font-size:1.3rem; border-left:4px solid #007aff; padding-left:0.8rem; margin:1.5rem 0 1rem;">連絡先</h2><div class="contact-detail">${displayContact.mail ? `<p>📧 ${escapeHtml(displayContact.mail)}</p>` : ''}${displayContact.tel ? `<p>📞 ${escapeHtml(displayContact.tel)}</p>` : ''}${displayContact.address ? `<p>🏠 ${escapeHtml(displayContact.address)}</p>` : ''}</div></div>`;
+            }
+            
+            const formHtml = showForm ? `
+            <div class="section"><h2 style="font-size:1.3rem; border-left:4px solid #007aff; padding-left:0.8rem; margin:1.5rem 0 1rem;">お問い合わせ</h2>
+            <form class="demo-form" onsubmit="sendInquiry(); return false;" style="display:flex; flex-direction:column; gap:0.6rem; max-width:500px;">
+                <input type="text" id="formName" placeholder="お名前" required style="padding:0.6rem 1rem; border-radius:40px; border:1px solid #d2d2d7;">
+                <input type="email" id="formEmail" placeholder="メールアドレス" required style="padding:0.6rem 1rem; border-radius:40px; border:1px solid #d2d2d7;">
+                <input type="tel" id="formPhone" placeholder="電話番号 (任意)" style="padding:0.6rem 1rem; border-radius:40px; border:1px solid #d2d2d7;">
+                <textarea id="formMessage" rows="3" placeholder="メッセージ" required style="padding:0.6rem 1rem; border-radius:20px; border:1px solid #d2d2d7;"></textarea>
+                <button type="submit" style="background:${btnColor}; color:white; border:none; padding:0.6rem 1.2rem; border-radius:40px; font-weight:600; cursor:pointer;">${escapeHtml(btnText)}</button>
+            </form>
+            <script>
+                function sendInquiry() {
+                    const name = document.getElementById('formName').value.trim();
+                    const email = document.getElementById('formEmail').value.trim();
+                    const phone = document.getElementById('formPhone').value.trim();
+                    const message = document.getElementById('formMessage').value.trim();
+                    if (!name || !email || !message) { alert('必須項目を入力してください。'); return; }
+                    const body = "お名前: " + name + "\\nメールアドレス: " + email + "\\n電話番号: " + phone + "\\nメッセージ: " + message;
+                    window.location.href = "mailto:${escapeHtml(formReceiverEmail)}?subject=お問い合わせ from " + encodeURIComponent(name) + "&body=" + encodeURIComponent(body);
+                    alert('メールアプリが起動します。送信してください。');
+                }
+            <\/script>
+            </div>` : '';
+            
+            const ctaHtml = showCta ? `<div class="cta-block" style="text-align:center; margin:2rem 0;"><div style="background:#f9f9fb; padding:1.5rem; border-radius:36px;"><h3>${escapeHtml(ctaText)}</h3><button class="cta-btn" style="background:${btnColor}; color:white; border:none; padding:0.6rem 1.2rem; border-radius:40px; font-weight:600; cursor:pointer;">${escapeHtml(ctaText)}</button></div></div>` : '';
+            
+            const enabledLegal = legalItems.filter(item => item.enabled);
+            let legalLinksHtml = '', modalsHtml = '';
+            if (enabledLegal.length) {
+                legalLinksHtml = `<div class="legal-links" style="text-align:center; margin:2rem 0 1rem; font-size:0.8rem;">${enabledLegal.map((item) => `<a href="#" onclick="document.getElementById('modal_${item.id}').style.display='flex';return false;" style="color:#007aff; text-decoration:none; margin:0 0.3rem;">${escapeHtml(item.label)}</a>`).join(' | ')}</div>`;
+                modalsHtml = enabledLegal.map(item => `
+                <div id="modal_${item.id}" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
+                    <div style="background:white; max-width:600px; margin:5% auto; padding:1.5rem; border-radius:24px; max-height:80%; overflow:auto;">
+                        <h3>${escapeHtml(item.label)}</h3>
+                        <p style="white-space:pre-wrap;">${escapeHtml(item.content)}</p>
+                        <button onclick="document.getElementById('modal_${item.id}').style.display='none'" style="margin-top:1rem; padding:0.4rem 1rem;">閉じる</button>
+                    </div>
+                </div>`).join('');
+            }
+            
+            let copyrightHtml = `© ${new Date().getFullYear()} Site Studio`;
+            if (copyrightName.trim()) copyrightHtml += ` / ${escapeHtml(copyrightName.trim())}`;
 
-        return `<!DOCTYPE html>
+            return `<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -595,9 +667,20 @@
         h1 { font-size: ${headingSize}rem; font-weight: 700; margin-bottom: 0.5rem; }
         .hero-desc { font-size: 1rem; color: #6e6e73; }
         .hero { text-align: center; margin-bottom: 2.5rem; }
-        .subcard { border-radius: 24px; padding: 1.2rem; margin-bottom: 1.5rem; }
-        .demo-form input, .demo-form textarea { padding: 0.6rem 1rem; border-radius: 40px; border: 1px solid #d2d2d7; background: white; }
-        button { background: ${btnColor}; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 40px; font-weight: 600; cursor: pointer; }
+        .subcard { border-radius: 24px; }
+        .subimg { width: 100%; border-radius: 20px; margin-bottom: 1rem; max-height: 200px; object-fit: cover; }
+        .gallery { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+        .gallery-item { flex:1; aspect-ratio: 1/1; border-radius: 24px; overflow: hidden; background: #f5f5f7; }
+        .gallery-item img { width:100%; height:100%; object-fit: cover; }
+        .no-img { background: repeating-linear-gradient(45deg, #e5e5ea, #e5e5ea 10px, #f5f5f7 10px, #f5f5f7 20px); }
+        .demo-form input, .demo-form textarea { padding: 0.6rem 1rem; border-radius: 40px; border: 1px solid #d2d2d7; background: white; width:100%; margin-bottom:0.5rem; }
+        .demo-form button, .cta-btn { background: ${btnColor}; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 40px; font-weight: 600; cursor: pointer; }
+        .cta-block { text-align: center; margin: 2rem 0; }
+        .cta-inner { background: #f9f9fb; padding: 1.5rem; border-radius: 36px; }
+        .legal-links { text-align: center; margin: 2rem 0 1rem; font-size: 0.8rem; }
+        .legal-links a { color: #007aff; text-decoration: none; margin: 0 0.3rem; }
+        footer { text-align: center; font-size: 0.7rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e5ea; }
+        @media (max-width: 640px) { .container { padding: 1rem; } }
     </style>
 </head>
 <body>
@@ -614,62 +697,76 @@
 </div>
 </body>
 </html>`;
-    }
+        }
 
-    function updatePreview() {
-        const html = generateHTML();
-        const iframe = document.getElementById('previewFrame');
-        iframe.srcdoc = html;
-    }
+        // ========== プレビュー更新 ==========
+        function updatePreview() {
+            const html = generateHTML();
+            if (previewFrame) {
+                previewFrame.srcdoc = html;
+            }
+        }
 
-    // イベント登録
-    bgTypeSelect.addEventListener('change', () => { toggleBgFields(); updatePreview(); });
-    bgColorInput.addEventListener('input', updatePreview);
-    bgImageInput.addEventListener('input', updatePreview);
-    bgRepeatSelect.addEventListener('change', updatePreview);
-    heroTitleInp.addEventListener('input', updatePreview);
-    heroDescInp.addEventListener('input', updatePreview);
-    chkHero.addEventListener('change', () => { showHero = chkHero.checked; updatePreview(); });
-    chkSub.addEventListener('change', () => { showSub = chkSub.checked; updatePreview(); });
-    chkGallery.addEventListener('change', () => { showGallery = chkGallery.checked; toggleSubSettings(); updatePreview(); });
-    chkContact.addEventListener('change', () => { showContactInfo = chkContact.checked; toggleSubSettings(); updatePreview(); });
-    chkForm.addEventListener('change', () => { showForm = chkForm.checked; toggleSubSettings(); updatePreview(); });
-    chkCta.addEventListener('change', () => { showCta = chkCta.checked; updatePreview(); });
-    galInputs.forEach(inp => inp.addEventListener('input', updatePreview));
-    displayMail.addEventListener('input', updatePreview); 
-    displayTel.addEventListener('input', updatePreview); 
-    displayAddress.addEventListener('input', updatePreview);
-    formReceiverInput.addEventListener('input', updatePreview);
-    headingSlider.addEventListener('input', () => { headingVal.innerText = headingSlider.value + 'rem'; updatePreview(); });
-    btnColorPicker.addEventListener('input', updatePreview);
-    btnTextInp.addEventListener('input', updatePreview);
-    ctaTextInp.addEventListener('input', updatePreview);
-    copyrightInp.addEventListener('input', updatePreview);
+        // ========== イベント登録 ==========
+        function bindEvents() {
+            bgTypeSelect.addEventListener('change', () => { toggleBgFields(); updatePreview(); });
+            bgColorInput.addEventListener('input', updatePreview);
+            bgImageInput.addEventListener('input', updatePreview);
+            bgRepeatSelect.addEventListener('change', updatePreview);
+            heroTitleInp.addEventListener('input', updatePreview);
+            heroDescInp.addEventListener('input', updatePreview);
+            chkHero.addEventListener('change', () => { showHero = chkHero.checked; updatePreview(); });
+            chkSub.addEventListener('change', () => { showSub = chkSub.checked; updatePreview(); });
+            chkGallery.addEventListener('change', () => { showGallery = chkGallery.checked; toggleSubSettings(); updatePreview(); });
+            chkContact.addEventListener('change', () => { showContactInfo = chkContact.checked; toggleSubSettings(); updatePreview(); });
+            chkForm.addEventListener('change', () => { showForm = chkForm.checked; toggleSubSettings(); updatePreview(); });
+            chkCta.addEventListener('change', () => { showCta = chkCta.checked; updatePreview(); });
+            galInputs.forEach(inp => inp.addEventListener('input', updatePreview));
+            displayMail.addEventListener('input', updatePreview);
+            displayTel.addEventListener('input', updatePreview);
+            displayAddress.addEventListener('input', updatePreview);
+            formReceiverInput.addEventListener('input', updatePreview);
+            headingSlider.addEventListener('input', () => { headingVal.innerText = headingSlider.value + 'rem'; updatePreview(); });
+            btnColorPicker.addEventListener('input', updatePreview);
+            btnTextInp.addEventListener('input', updatePreview);
+            ctaTextInp.addEventListener('input', updatePreview);
+            copyrightInp.addEventListener('input', updatePreview);
+            
+            addSubBtn.addEventListener('click', () => {
+                subBlocks.push({ title: "新しいブロック", content: "説明を入力", imgUrl: "", fontSize: 1, bgColor: "#ffffff" });
+                renderSubBlocksUI();
+                bindRandomButtons();
+                updatePreview();
+            });
+            
+            downloadBtn.addEventListener('click', async () => {
+                const html = generateHTML();
+                const zip = new JSZip();
+                zip.file("index.html", html);
+                zip.file(".nojekyll", "");
+                const blob = await zip.generateAsync({ type: "blob" });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `site_2026_${Date.now()}.zip`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            });
+        }
 
-    document.getElementById('downloadBtn').addEventListener('click', async () => {
-        const html = generateHTML();
-        const zip = new JSZip();
-        zip.file("index.html", html);
-        zip.file(".nojekyll", "");
-        const blob = await zip.generateAsync({ type: "blob" });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `site_2026.zip`;
-        a.click();
-        URL.revokeObjectURL(a.href);
-    });
-
-    // 初期化
-    renderSubBlocksUI();
-    renderLegalUI();
-    buildGradTabs();
-    toggleBgFields();
-    toggleSubSettings();
-    updatePreview();
+        // ========== 初期化 ==========
+        function init() {
+            renderSubBlocksUI();
+            renderLegalUI();
+            buildGradTabs();
+            toggleBgFields();
+            toggleSubSettings();
+            bindEvents();
+            bindRandomButtons();
+            updatePreview();
+        }
+        
+        init();
+    })();
 </script>
 </body>
 </html>
-```
-
-これで**完全に全部**出力しました。  
-コピーして使ってください！
