@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Site Studio 2026 - CTAリンク先・ボタン表示切替対応</title>
+    <title>Site Studio 2026</title>
     <style>
         * {
             margin: 0;
@@ -201,7 +201,7 @@
             border-radius: 40px;
             border: none;
             font-weight: 600;
-            margin: 1.5rem 0 0.8rem;
+            margin: 1rem 0 0.8rem;
             cursor: pointer;
             font-size: 0.9rem;
         }
@@ -213,26 +213,6 @@
             border-radius: 16px;
             margin-top: 0.5rem;
         }
-        .deploy-guide {
-            background: #f0f4ff;
-            border-radius: 24px;
-            padding: 1rem;
-            margin-top: 1rem;
-            border-left: 4px solid #007aff;
-        }
-        .deploy-guide h3 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        .deploy-guide ol {
-            margin-left: 1.2rem;
-            font-size: 0.75rem;
-            color: #333;
-        }
-        .deploy-guide li {
-            margin-bottom: 0.3rem;
-        }
         .preview-frame {
             width: 100%;
             height: 640px;
@@ -240,7 +220,65 @@
             border-radius: 24px;
             background: white;
         }
-        @media (max-width: 800px) { .settings-panel { height: auto; position: relative; } }
+        .guide-section {
+            background: rgba(240, 244, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(0, 122, 255, 0.2);
+        }
+        .guide-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border-left: 3px solid #007aff;
+            padding-left: 0.6rem;
+        }
+        .guide-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        .guide-card {
+            background: rgba(255,255,255,0.6);
+            border-radius: 24px;
+            padding: 1rem;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .guide-card h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .guide-card ol, .guide-card ul {
+            margin-left: 1.2rem;
+            font-size: 0.75rem;
+            color: #1d1d1f;
+        }
+        .guide-card li {
+            margin-bottom: 0.3rem;
+        }
+        .guide-card code {
+            background: #e9e9ef;
+            padding: 0.1rem 0.3rem;
+            border-radius: 8px;
+            font-size: 0.7rem;
+        }
+        .guide-note {
+            margin-top: 1rem;
+            font-size: 0.7rem;
+            color: #4a4a4e;
+            background: #f9f9fb;
+            padding: 0.8rem;
+            border-radius: 20px;
+            text-align: center;
+        }
+        @media (max-width: 800px) {
+            .settings-panel { height: auto; position: relative; }
+            .guide-steps { grid-template-columns: 1fr; }
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
@@ -248,22 +286,21 @@
 <div class="container">
     <div class="generator-header">
         <h1>Site Studio 2026</h1>
-        <p>CTAボタン表示/非表示・リンク先URL設定可能 / 完全動作版</p>
+        <p>サイトを自由に編集し、ZIPファイルで書き出す</p>
     </div>
     <div class="two-columns">
         <!-- 左: 設定パネル -->
         <div class="settings-panel">
-            <!-- 背景設定 -->
-            <div class="section-title">背景</div>
+            <div class="section-title">背景設定</div>
             <div class="setting-row">
-                <label>タイプ</label>
+                <label>背景の種類</label>
                 <select id="bgType">
                     <option value="color">単色</option>
                     <option value="gradient">グラデーション</option>
                     <option value="image">画像</option>
                 </select>
             </div>
-            <div id="colorRow" class="setting-row"><label>カラー</label><input type="color" id="bgColor" value="#ffffff"></div>
+            <div id="colorRow" class="setting-row"><label>背景色</label><input type="color" id="bgColor" value="#ffffff"></div>
             <div id="gradientRow" style="display:none;">
                 <div class="grad-tabs" id="gradTabs"></div>
                 <div class="grad-preview" id="gradPreview"></div>
@@ -271,496 +308,296 @@
             </div>
             <div id="imageRow" style="display:none;">
                 <div class="setting-row"><label>画像URL</label><input type="text" id="bgImageUrl" placeholder="https://..."></div>
-                <div class="setting-row"><label>表示</label><select id="bgRepeat"><option value="cover">画面いっぱい</option><option value="contain">全体表示</option><option value="repeat">繰り返す</option></select></div>
+                <div class="setting-row"><label>表示方法</label><select id="bgRepeat"><option value="cover">画面いっぱい</option><option value="contain">全体表示</option><option value="repeat">繰り返す</option></select></div>
             </div>
-            <!-- メインテキスト -->
+            
             <div class="section-title">メインテキスト</div>
             <div class="setting-row"><label>見出し</label><input type="text" id="heroTitle" value="Welcome"></div>
-            <div class="setting-row"><label>説明</label><textarea id="heroDesc" rows="2">洗練されたデザインのサイトを生成します。</textarea></div>
-            <!-- サブコンテンツ -->
-            <div class="section-title">サブコンテンツ (自由追加・削除)</div>
+            <div class="setting-row"><label>説明文</label><textarea id="heroDesc" rows="2">ここにサイトの説明を入力します。</textarea></div>
+            
+            <div class="section-title">サブコンテンツ (自由に追加・削除)</div>
             <div id="subcontentList" class="subcontent-list"></div>
             <button id="addSubBtn" class="add-sub-btn">+ ブロックを追加</button>
-            <!-- セクション表示 -->
-            <div class="section-title">セクション表示</div>
+            
+            <div class="section-title">表示するセクション</div>
             <div class="check-group"><input type="checkbox" id="secHero" checked> メイン見出し</div>
             <div class="check-group"><input type="checkbox" id="secSub" checked> サブコンテンツ</div>
             <div class="check-group"><input type="checkbox" id="secGallery"> ギャラリー (3枚)</div>
             <div id="galleryUrls" style="margin-left:1rem; display:none;">
-                <div class="image-row" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
-                    <input type="text" id="gal1" placeholder="画像URL 1" style="flex:3;">
-                    <button class="small-btn random-img" data-target="gal1">ランダム</button>
-                </div>
-                <div class="image-row" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
-                    <input type="text" id="gal2" placeholder="画像URL 2" style="flex:3;">
-                    <button class="small-btn random-img" data-target="gal2">ランダム</button>
-                </div>
-                <div class="image-row" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
-                    <input type="text" id="gal3" placeholder="画像URL 3" style="flex:3;">
-                    <button class="small-btn random-img" data-target="gal3">ランダム</button>
-                </div>
+                <div class="image-row" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;"><input type="text" id="gal1" placeholder="画像URL 1" style="flex:3;"><button class="small-btn random-img" data-target="gal1">ランダム画像</button></div>
+                <div class="image-row" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;"><input type="text" id="gal2" placeholder="画像URL 2" style="flex:3;"><button class="small-btn random-img" data-target="gal2">ランダム画像</button></div>
+                <div class="image-row" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;"><input type="text" id="gal3" placeholder="画像URL 3" style="flex:3;"><button class="small-btn random-img" data-target="gal3">ランダム画像</button></div>
             </div>
-            <div class="check-group"><input type="checkbox" id="secContactInfo"> 連絡先表示</div>
+            <div class="check-group"><input type="checkbox" id="secContactInfo"> 連絡先情報</div>
             <div id="contactInfoDiv" style="margin-left:1rem; display:none;">
-                <input type="email" id="displayMail" placeholder="表示用メールアドレス" style="width:100%; margin-bottom:0.3rem;">
-                <input type="tel" id="displayTel" placeholder="表示用電話番号" style="width:100%; margin-bottom:0.3rem;">
+                <input type="email" id="displayMail" placeholder="メールアドレス" style="width:100%; margin-bottom:0.3rem;">
+                <input type="tel" id="displayTel" placeholder="電話番号" style="width:100%; margin-bottom:0.3rem;">
                 <input type="text" id="displayAddress" placeholder="住所" style="width:100%;">
             </div>
-            <!-- 問い合わせフォーム設定 -->
-            <div class="section-title">問い合わせフォーム設定</div>
-            <div class="check-group"><input type="checkbox" id="secForm"> 問い合わせフォームを表示</div>
+            
+            <div class="section-title">お問い合わせフォーム</div>
+            <div class="check-group"><input type="checkbox" id="secForm"> フォームを表示</div>
             <div id="formSettings" style="margin-left:1rem; display:none;">
                 <div class="setting-row"><label>送信先メール</label><input type="email" id="formReceiverEmail" placeholder="your@email.com" value="info@example.com"></div>
-                <div class="info-note">※ このメールアドレス宛に問い合わせ内容が送信されます（mailto: 方式）</div>
+                <div class="info-note">※ 送信ボタンを押すとメールアプリが開きます（mailto: 形式）</div>
             </div>
-            <!-- CTAセクション拡張（ボタン表示切替＋リンク先URL） -->
-            <div class="check-group"><input type="checkbox" id="secCta"> CTAセクションを表示</div>
-            <div id="ctaSettings" style="margin-left:1rem; display:none;">
-                <div class="setting-row"><label>CTA画像URL</label><input type="text" id="ctaImageUrl" placeholder="画像URL (任意)"></div>
-                <div class="setting-row"><label>CTA見出し</label><input type="text" id="ctaHeading" value="詳細を見る"></div>
-                <div class="setting-row"><label>CTA詳細文</label><textarea id="ctaDetail" rows="2" placeholder="追加説明があれば記入"></textarea></div>
-                <div class="check-group" style="margin-left:0;"><input type="checkbox" id="ctaShowButton" checked> ボタンを表示する</div>
-                <div class="setting-row"><label>ボタン文言</label><input type="text" id="ctaBtnText" value="お問い合わせ"></div>
-                <div class="setting-row"><label>リンク先URL</label><input type="text" id="ctaBtnLink" value="#" placeholder="https://example.com または #"></div>
-            </div>
-            <!-- 法務・規約 -->
-            <div class="section-title">法務・規約項目 (チェックしたものだけ表示)</div>
-            <div id="legalItemsContainer"></div>
-            <!-- デザイン微調整 -->
-            <div class="section-title">デザイン微調整</div>
-            <div class="setting-row"><label>見出しサイズ</label><input type="range" id="headingSize" min="1.5" max="3" step="0.1" value="2"><span id="headingSizeVal">2rem</span></div>
-            <div class="setting-row"><label>ボタン色</label><input type="color" id="btnColor" value="#007aff"></div>
-            <div class="setting-row"><label>フォームボタン文言</label><input type="text" id="btnText" value="送信"></div>
-            <!-- コピーライト -->
-            <div class="section-title">コピーライト</div>
-            <div class="setting-row"><label>追加名義</label><input type="text" id="copyrightName" placeholder="Your Name"></div>
-            <button class="download" id="downloadBtn">ZIPダウンロード (.nojekyll 同梱)</button>
             
-            <!-- 初心者向け公開手順 -->
-            <div class="deploy-guide">
-                <h3>📦 ダウンロードしたZIPの使い方</h3>
-                <ol>
-                    <li>ZIPを展開する（ダブルクリック）</li>
-                    <li><strong>Netlify Drop</strong> → <code>app.netlify.com/drop</code> にフォルダをドラッグ＆ドロップ</li>
-                    <li><strong>Cloudflare Pages</strong> → ダッシュボードからアップロード</li>
-                    <li><strong>ローカル確認</strong> → index.htmlをブラウザで開く</li>
-                    <li>※ <code>.nojekyll</code> はGitHub Pages用のファイル。他のサービスでは無視されます</li>
-                </ol>
+            <div class="section-title">お知らせ・案内 (CTA)</div>
+            <div class="check-group"><input type="checkbox" id="secCta"> CTAを表示</div>
+            <div id="ctaSettings" style="margin-left:1rem; display:none;">
+                <div class="setting-row"><label>画像URL (任意)</label><input type="text" id="ctaImageUrl" placeholder=""></div>
+                <div class="setting-row"><label>見出し</label><input type="text" id="ctaHeading" value="詳細を見る"></div>
+                <div class="setting-row"><label>詳細説明</label><textarea id="ctaDetail" rows="2"></textarea></div>
+                <div class="check-group" style="margin-left:0;"><input type="checkbox" id="ctaShowButton" checked> ボタンを表示</div>
+                <div class="setting-row"><label>ボタン文言</label><input type="text" id="ctaBtnText" value="お問い合わせ"></div>
+                <div class="setting-row"><label>リンク先URL</label><input type="text" id="ctaBtnLink" value="#"></div>
             </div>
+            
+            <div class="section-title">規約・法務 (チェックしたものだけ表示)</div>
+            <div id="legalItemsContainer"></div>
+            
+            <div class="section-title">デザイン調整</div>
+            <div class="setting-row"><label>見出しの大きさ</label><input type="range" id="headingSize" min="1.5" max="3" step="0.1" value="2"><span id="headingSizeVal">2rem</span></div>
+            <div class="setting-row"><label>ボタンの色</label><input type="color" id="btnColor" value="#007aff"></div>
+            <div class="setting-row"><label>フォームのボタン文言</label><input type="text" id="btnText" value="送信"></div>
+            
+            <div class="section-title">コピーライト</div>
+            <div class="setting-row"><label>追加名義</label><input type="text" id="copyrightName" placeholder="あなたの名前"></div>
+            
+            <button class="download" id="downloadBtn">ZIPダウンロード (.nojekyll 同梱)</button>
+            <div class="info-note">ZIPを展開したら、下のガイドを見て公開してください。</div>
         </div>
+        
         <!-- 右: プレビュー -->
         <div class="preview-panel">
             <div class="section-title">リアルタイムプレビュー</div>
             <iframe class="preview-frame" id="previewFrame" title="プレビュー"></iframe>
         </div>
     </div>
+    
+    <!-- 公開ガイド (初心者向け、詳細ステップ) -->
+    <div class="guide-section">
+        <div class="guide-title">ZIPを公開する方法 (初心者でも簡単)</div>
+        <div class="guide-steps">
+            <div class="guide-card">
+                <h4>1. まずは自分のパソコンで確認</h4>
+                <ol>
+                    <li>ダウンロードしたZIPファイルを右クリック → 「すべて展開」</li>
+                    <li>出てきたフォルダを開く</li>
+                    <li><code>index.html</code> をダブルクリック → ブラウザで表示されます</li>
+                </ol>
+            </div>
+            <div class="guide-card">
+                <h4>2. Netlify Drop (最も簡単・無料・アカウント不要)</h4>
+                <ol>
+                    <li><code>app.netlify.com/drop</code> にアクセス</li>
+                    <li>先ほど展開したフォルダを、画面の枠内にドラッグ＆ドロップ</li>
+                    <li>数秒待つと <code>https://◯◯◯.netlify.app</code> というURLが発行されます</li>
+                    <li>そのURLをブラウザで開けば完成！ SNSでシェアもできます</li>
+                </ol>
+            </div>
+            <div class="guide-card">
+                <h4>3. GitHub Pages (無料・GitHubアカウントが必要)</h4>
+                <ol>
+                    <li>GitHubにログインし、「New repository」で新しいリポジトリを作成 (Public)</li>
+                    <li>リポジトリ名を入力 (例: my-site) → 「Create repository」</li>
+                    <li>「uploading an existing file」をクリック</li>
+                    <li>展開したフォルダの中の全てのファイルをドラッグ＆ドロップ → 「Commit changes」</li>
+                    <li>「Settings」→「Pages」→「Branch」を <code>main</code> / <code>/(root)</code> に設定 → 「Save」</li>
+                    <li>1分ほど待つと、<code>https://あなたのユーザー名.github.io/リポジトリ名/</code> で公開されます</li>
+                </ol>
+            </div>
+            <div class="guide-card">
+                <h4>4. Cloudflare Pages (無料・高速)</h4>
+                <ol>
+                    <li>Cloudflareダッシュボードにログイン → 「Pages」→「Create a project」→「Direct upload」</li>
+                    <li>展開したフォルダをドラッグ＆ドロップ → 「Deploy」</li>
+                    <li>自動で発行されたURLにアクセス</li>
+                </ol>
+            </div>
+        </div>
+        <div class="guide-note">
+          補足: ZIPに含まれている「.nojekyll」という空ファイルは、GitHub Pagesに「Jekyllという変換ツールを使わないで」と指示するためのものです。他のサービスでは無視されるので気にしなくて大丈夫です。
+        </div>
+    </div>
 </div>
 
 <script>
 (function(){
-    // ---------- グラデーション定義 ----------
+    // グラデーション定義
     const gradients = {
         "シルバー": "linear-gradient(145deg, #f5f5f7, #e8e8ed)",
         "ブルー": "linear-gradient(135deg, #eef2ff, #d9e2ff)",
         "スペースグレイ": "linear-gradient(135deg, #2c2c2e, #1c1c1e)",
         "サンセット": "linear-gradient(135deg, #ffd6b0, #ffb88c)"
     };
-    
-    // ---------- 状態 ----------
-    let currentBgType = 'color';
-    let bgColor = '#ffffff';
-    let selectedGradient = gradients["シルバー"];
-    let customGradient = '';
-    let bgImageUrl = '', bgRepeat = 'cover';
-    let heroTitle = 'Welcome', heroDesc = '洗練されたデザインのサイトを生成します。';
+    let currentBgType = 'color', bgColor = '#ffffff', selectedGradient = gradients["シルバー"], customGradient = '', bgImageUrl = '', bgRepeat = 'cover';
+    let heroTitle = 'Welcome', heroDesc = 'ここにサイトの説明を入力します。';
     let showHero = true, showSub = true, showGallery = false, showContactInfo = false, showForm = false, showCta = false;
     let galleryUrls = ['', '', ''];
     let displayContact = { mail: '', tel: '', address: '' };
     let formReceiverEmail = 'info@example.com';
-    let headingSize = 2, btnColor = '#007aff', btnText = '送信';
-    let copyrightName = '';
-    // CTA拡張項目
-    let ctaImageUrl = '';
-    let ctaHeading = '詳細を見る';
-    let ctaDetail = '';
-    let ctaShowButton = true;
-    let ctaBtnText = 'お問い合わせ';
-    let ctaBtnLink = '#';
-    
-    // サブコンテンツ初期データ
-    let subBlocks = [
-        { title: "革新的なデザイン", content: "美しく直感的なレイアウトを提供します。", imgUrl: "", fontSize: 1, bgColor: "#ffffff" }
-    ];
-    
-    // 法務項目
+    let headingSize = 2, btnColor = '#007aff', btnText = '送信', copyrightName = '';
+    let ctaImageUrl = '', ctaHeading = '詳細を見る', ctaDetail = '', ctaShowButton = true, ctaBtnText = 'お問い合わせ', ctaBtnLink = '#';
+    let subBlocks = [{ title: "革新的なデザイン", content: "美しく直感的なレイアウトを提供します。", imgUrl: "", fontSize: 1, bgColor: "#ffffff" }];
     let legalItems = [
-        { id: "terms", label: "利用規約", enabled: true, content: "ここに利用規約の内容を記述してください。\n禁止事項、免責事項などを含みます。" },
-        { id: "privacy", label: "プライバシーポリシー", enabled: true, content: "個人情報の収集、利用目的、第三者提供についてのポリシーです。" },
-        { id: "specCommercial", label: "特定商取引法に基づく表示", enabled: true, content: "販売業者名、代表者、所在地、連絡先、販売価格、支払方法、返品について。" },
-        { id: "disclaimer", label: "免責事項", enabled: true, content: "当サイトの情報の正確性には注意を払っていますが、利用者が被った損害について責任を負いません。" },
-        { id: "contactLegal", label: "お問い合わせ先（法人情報）", enabled: true, content: "運営会社名、メールアドレス、電話番号などを記載してください。" }
+        { id: "terms", label: "利用規約", enabled: true, content: "ここに利用規約の内容を記述してください。" },
+        { id: "privacy", label: "プライバシーポリシー", enabled: true, content: "個人情報の取り扱いについて記述してください。" },
+        { id: "specCommercial", label: "特定商取引法に基づく表示", enabled: true, content: "販売業者名、所在地、連絡先などを記述してください。" },
+        { id: "disclaimer", label: "免責事項", enabled: true, content: "免責事項を記述してください。" },
+        { id: "contactLegal", label: "お問い合わせ先（法人情報）", enabled: true, content: "運営会社名、メールアドレスなどを記述してください。" }
     ];
     
-    // ---------- DOM 要素 ----------
-    const bgTypeSelect = document.getElementById('bgType');
-    const colorRow = document.getElementById('colorRow');
-    const gradientRow = document.getElementById('gradientRow');
-    const imageRow = document.getElementById('imageRow');
-    const bgColorInput = document.getElementById('bgColor');
-    const gradTabsDiv = document.getElementById('gradTabs');
-    const gradPreview = document.getElementById('gradPreview');
-    const customGradInput = document.getElementById('customGradient');
-    const bgImageInput = document.getElementById('bgImageUrl');
-    const bgRepeatSelect = document.getElementById('bgRepeat');
-    const heroTitleInp = document.getElementById('heroTitle');
-    const heroDescInp = document.getElementById('heroDesc');
-    const chkHero = document.getElementById('secHero');
-    const chkSub = document.getElementById('secSub');
-    const chkGallery = document.getElementById('secGallery');
-    const chkContact = document.getElementById('secContactInfo');
-    const chkForm = document.getElementById('secForm');
-    const chkCta = document.getElementById('secCta');
-    const galleryDiv = document.getElementById('galleryUrls');
-    const contactDiv = document.getElementById('contactInfoDiv');
-    const formSettingsDiv = document.getElementById('formSettings');
-    const ctaSettingsDiv = document.getElementById('ctaSettings');
+    // DOM要素取得（省略せずに全て定義）
+    const bgTypeSelect = document.getElementById('bgType'), colorRow = document.getElementById('colorRow'), gradientRow = document.getElementById('gradientRow'), imageRow = document.getElementById('imageRow');
+    const bgColorInput = document.getElementById('bgColor'), gradTabsDiv = document.getElementById('gradTabs'), gradPreview = document.getElementById('gradPreview'), customGradInput = document.getElementById('customGradient');
+    const bgImageInput = document.getElementById('bgImageUrl'), bgRepeatSelect = document.getElementById('bgRepeat'), heroTitleInp = document.getElementById('heroTitle'), heroDescInp = document.getElementById('heroDesc');
+    const chkHero = document.getElementById('secHero'), chkSub = document.getElementById('secSub'), chkGallery = document.getElementById('secGallery'), chkContact = document.getElementById('secContactInfo'), chkForm = document.getElementById('secForm'), chkCta = document.getElementById('secCta');
+    const galleryDiv = document.getElementById('galleryUrls'), contactDiv = document.getElementById('contactInfoDiv'), formSettingsDiv = document.getElementById('formSettings'), ctaSettingsDiv = document.getElementById('ctaSettings');
     const galInputs = [document.getElementById('gal1'), document.getElementById('gal2'), document.getElementById('gal3')];
-    const displayMail = document.getElementById('displayMail');
-    const displayTel = document.getElementById('displayTel');
-    const displayAddress = document.getElementById('displayAddress');
-    const formReceiverInput = document.getElementById('formReceiverEmail');
-    const headingSlider = document.getElementById('headingSize');
-    const headingVal = document.getElementById('headingSizeVal');
-    const btnColorPicker = document.getElementById('btnColor');
-    const btnTextInp = document.getElementById('btnText');
-    const copyrightInp = document.getElementById('copyrightName');
-    const ctaImageUrlInp = document.getElementById('ctaImageUrl');
-    const ctaHeadingInp = document.getElementById('ctaHeading');
-    const ctaDetailInp = document.getElementById('ctaDetail');
-    const ctaShowButtonChk = document.getElementById('ctaShowButton');
-    const ctaBtnTextInp = document.getElementById('ctaBtnText');
-    const ctaBtnLinkInp = document.getElementById('ctaBtnLink');
-    const legalContainer = document.getElementById('legalItemsContainer');
-    const subContainer = document.getElementById('subcontentList');
-    const addSubBtn = document.getElementById('addSubBtn');
-    const downloadBtn = document.getElementById('downloadBtn');
-    const previewFrame = document.getElementById('previewFrame');
+    const displayMail = document.getElementById('displayMail'), displayTel = document.getElementById('displayTel'), displayAddress = document.getElementById('displayAddress'), formReceiverInput = document.getElementById('formReceiverEmail');
+    const headingSlider = document.getElementById('headingSize'), headingVal = document.getElementById('headingSizeVal'), btnColorPicker = document.getElementById('btnColor'), btnTextInp = document.getElementById('btnText'), copyrightInp = document.getElementById('copyrightName');
+    const ctaImageUrlInp = document.getElementById('ctaImageUrl'), ctaHeadingInp = document.getElementById('ctaHeading'), ctaDetailInp = document.getElementById('ctaDetail'), ctaShowButtonChk = document.getElementById('ctaShowButton'), ctaBtnTextInp = document.getElementById('ctaBtnText'), ctaBtnLinkInp = document.getElementById('ctaBtnLink');
+    const legalContainer = document.getElementById('legalItemsContainer'), subContainer = document.getElementById('subcontentList'), addSubBtn = document.getElementById('addSubBtn'), downloadBtn = document.getElementById('downloadBtn'), previewFrame = document.getElementById('previewFrame');
     
-    // ---------- ユーティリティ ----------
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
+    function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g,function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    function randomImageUrl(){ return `https://picsum.photos/id/${Math.floor(Math.random() * 200)}/600/400`; }
+    function bindRandomButtons(){ document.querySelectorAll('.random-img').forEach(btn=>{ btn.removeEventListener('click', randomClickHandler); btn.addEventListener('click', randomClickHandler); }); }
+    function randomClickHandler(e){ const targetId=this.getAttribute('data-target'); const targetInput=document.getElementById(targetId); if(targetInput){ targetInput.value=randomImageUrl(); updatePreview(); } }
     
-    function randomImageUrl() {
-        return `https://picsum.photos/id/${Math.floor(Math.random() * 200)}/600/400`;
-    }
-    
-    function bindRandomButtons() {
-        document.querySelectorAll('.random-img').forEach(btn => {
-            btn.removeEventListener('click', randomClickHandler);
-            btn.addEventListener('click', randomClickHandler);
-        });
-    }
-    function randomClickHandler(e) {
-        const targetId = this.getAttribute('data-target');
-        const targetInput = document.getElementById(targetId);
-        if (targetInput) {
-            targetInput.value = randomImageUrl();
-            updatePreview();
-        }
-    }
-    
-    // ---------- サブコンテンツ描画（イベント委任）----------
-    function renderSubBlocksUI() {
-        subContainer.innerHTML = '';
-        subBlocks.forEach((block, idx) => {
-            const card = document.createElement('div');
-            card.className = 'subcontent-card';
-            card.setAttribute('data-block-index', idx);
-            card.innerHTML = `
-                <div class="subcontent-header">
-                    <span>ブロック ${idx + 1}</span>
-                    <button class="delete-sub" data-idx="${idx}">✖</button>
-                </div>
+    function renderSubBlocksUI(){
+        subContainer.innerHTML='';
+        subBlocks.forEach((block,idx)=>{
+            const card=document.createElement('div'); card.className='subcontent-card'; card.innerHTML=`
+                <div class="subcontent-header"><span>ブロック ${idx+1}</span><button class="delete-sub" data-idx="${idx}">×</button></div>
                 <div class="subcontent-fields">
                     <input type="text" placeholder="タイトル" value="${escapeHtml(block.title)}" data-field="title" data-idx="${idx}">
                     <textarea rows="2" placeholder="内容" data-field="content" data-idx="${idx}">${escapeHtml(block.content)}</textarea>
                     <input type="text" placeholder="画像URL (任意)" value="${escapeHtml(block.imgUrl)}" data-field="imgUrl" data-idx="${idx}">
                     <div class="row2">
-                        <div><label>フォントサイズ</label><input type="range" min="0.8" max="1.8" step="0.05" value="${block.fontSize}" data-field="fontSize" data-idx="${idx}"></div>
+                        <div><label>文字サイズ</label><input type="range" min="0.8" max="1.8" step="0.05" value="${block.fontSize}" data-field="fontSize" data-idx="${idx}"></div>
                         <div><label>背景色</label><input type="color" value="${block.bgColor}" data-field="bgColor" data-idx="${idx}"></div>
                     </div>
-                </div>
-            `;
+                </div>`;
             subContainer.appendChild(card);
         });
-        document.querySelectorAll('[data-field]').forEach(el => {
-            el.removeEventListener('input', fieldInputHandler);
-            el.addEventListener('input', fieldInputHandler);
-        });
+        document.querySelectorAll('[data-field]').forEach(el=>{ el.removeEventListener('input',fieldInputHandler); el.addEventListener('input',fieldInputHandler); });
     }
-    function fieldInputHandler(e) {
-        const idx = parseInt(e.target.getAttribute('data-idx'));
-        const field = e.target.getAttribute('data-field');
-        if (isNaN(idx)) return;
-        if (field === 'fontSize') subBlocks[idx].fontSize = parseFloat(e.target.value);
-        else if (field === 'bgColor') subBlocks[idx].bgColor = e.target.value;
-        else subBlocks[idx][field] = e.target.value;
-        updatePreview();
-    }
-    function handleDeleteClick(e) {
-        const btn = e.target.closest('.delete-sub');
-        if (!btn) return;
-        e.preventDefault();
-        const idx = parseInt(btn.getAttribute('data-idx'));
-        if (!isNaN(idx) && idx >= 0 && idx < subBlocks.length) {
-            subBlocks.splice(idx, 1);
-            renderSubBlocksUI();
-            bindRandomButtons();
-            updatePreview();
-        }
-    }
+    function fieldInputHandler(e){ const idx=parseInt(e.target.getAttribute('data-idx')), field=e.target.getAttribute('data-field'); if(isNaN(idx)) return; if(field==='fontSize') subBlocks[idx].fontSize=parseFloat(e.target.value); else if(field==='bgColor') subBlocks[idx].bgColor=e.target.value; else subBlocks[idx][field]=e.target.value; updatePreview(); }
+    function handleDeleteClick(e){ const btn=e.target.closest('.delete-sub'); if(!btn) return; e.preventDefault(); const idx=parseInt(btn.getAttribute('data-idx')); if(!isNaN(idx)&&idx>=0&&idx<subBlocks.length){ subBlocks.splice(idx,1); renderSubBlocksUI(); bindRandomButtons(); updatePreview(); } }
     subContainer.addEventListener('click', handleDeleteClick);
     
-    // ---------- 法務UI描画 ----------
-    function renderLegalUI() {
-        legalContainer.innerHTML = '';
-        legalItems.forEach((item, idx) => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'legal-check-group';
-            wrapper.innerHTML = `<input type="checkbox" data-legal-idx="${idx}" ${item.enabled ? 'checked' : ''}> <label style="font-weight:500;">${escapeHtml(item.label)}</label>`;
-            const editorDiv = document.createElement('div');
-            editorDiv.className = 'legal-editor';
-            editorDiv.style.display = item.enabled ? 'block' : 'none';
-            editorDiv.innerHTML = `<textarea rows="3" data-legal-text-idx="${idx}">${escapeHtml(item.content)}</textarea>`;
-            wrapper.appendChild(editorDiv);
-            legalContainer.appendChild(wrapper);
-            const chk = wrapper.querySelector('input[type="checkbox"]');
-            chk.addEventListener('change', (e) => {
-                legalItems[idx].enabled = e.target.checked;
-                editorDiv.style.display = e.target.checked ? 'block' : 'none';
-                updatePreview();
-            });
-            const textarea = editorDiv.querySelector('textarea');
-            textarea.addEventListener('input', (e) => {
-                legalItems[idx].content = e.target.value;
-                updatePreview();
-            });
+    function renderLegalUI(){
+        legalContainer.innerHTML='';
+        legalItems.forEach((item,idx)=>{
+            const wrapper=document.createElement('div'); wrapper.className='legal-check-group';
+            wrapper.innerHTML=`<input type="checkbox" data-legal-idx="${idx}" ${item.enabled?'checked':''}> <label>${escapeHtml(item.label)}</label>`;
+            const editorDiv=document.createElement('div'); editorDiv.className='legal-editor'; editorDiv.style.display=item.enabled?'block':'none';
+            editorDiv.innerHTML=`<textarea rows="3" data-legal-text-idx="${idx}">${escapeHtml(item.content)}</textarea>`;
+            wrapper.appendChild(editorDiv); legalContainer.appendChild(wrapper);
+            const chk=wrapper.querySelector('input[type="checkbox"]'); chk.addEventListener('change',(e)=>{ legalItems[idx].enabled=e.target.checked; editorDiv.style.display=e.target.checked?'block':'none'; updatePreview(); });
+            const textarea=editorDiv.querySelector('textarea'); textarea.addEventListener('input',(e)=>{ legalItems[idx].content=e.target.value; updatePreview(); });
         });
     }
     
-    // ---------- UI 表示切替 ----------
-    function toggleBgFields() {
-        currentBgType = bgTypeSelect.value;
-        colorRow.style.display = currentBgType === 'color' ? 'flex' : 'none';
-        gradientRow.style.display = currentBgType === 'gradient' ? 'block' : 'none';
-        imageRow.style.display = currentBgType === 'image' ? 'block' : 'none';
+    function toggleBgFields(){ currentBgType=bgTypeSelect.value; colorRow.style.display=currentBgType==='color'?'flex':'none'; gradientRow.style.display=currentBgType==='gradient'?'block':'none'; imageRow.style.display=currentBgType==='image'?'block':'none'; }
+    function toggleSubSettings(){ galleryDiv.style.display=showGallery?'block':'none'; contactDiv.style.display=showContactInfo?'block':'none'; formSettingsDiv.style.display=showForm?'block':'none'; ctaSettingsDiv.style.display=showCta?'block':'none'; }
+    function updateVariables(){
+        bgColor=bgColorInput.value; bgImageUrl=bgImageInput.value; bgRepeat=bgRepeatSelect.value;
+        heroTitle=heroTitleInp.value; heroDesc=heroDescInp.value;
+        showHero=chkHero.checked; showSub=chkSub.checked; showGallery=chkGallery.checked; showContactInfo=chkContact.checked; showForm=chkForm.checked; showCta=chkCta.checked;
+        galleryUrls=galInputs.map(i=>i.value);
+        displayContact={ mail:displayMail.value, tel:displayTel.value, address:displayAddress.value };
+        formReceiverEmail=formReceiverInput.value;
+        headingSize=parseFloat(headingSlider.value); headingVal.innerText=headingSize+'rem';
+        btnColor=btnColorPicker.value; btnText=btnTextInp.value; copyrightName=copyrightInp.value;
+        ctaImageUrl=ctaImageUrlInp.value; ctaHeading=ctaHeadingInp.value; ctaDetail=ctaDetailInp.value; ctaShowButton=ctaShowButtonChk.checked; ctaBtnText=ctaBtnTextInp.value; ctaBtnLink=ctaBtnLinkInp.value;
+        if(currentBgType==='gradient') selectedGradient=customGradInput.value;
     }
-    
-    function toggleSubSettings() {
-        galleryDiv.style.display = showGallery ? 'block' : 'none';
-        contactDiv.style.display = showContactInfo ? 'block' : 'none';
-        formSettingsDiv.style.display = showForm ? 'block' : 'none';
-        ctaSettingsDiv.style.display = showCta ? 'block' : 'none';
-    }
-    
-    // ---------- 変数更新 ----------
-    function updateVariables() {
-        bgColor = bgColorInput.value;
-        bgImageUrl = bgImageInput.value;
-        bgRepeat = bgRepeatSelect.value;
-        heroTitle = heroTitleInp.value;
-        heroDesc = heroDescInp.value;
-        showHero = chkHero.checked;
-        showSub = chkSub.checked;
-        showGallery = chkGallery.checked;
-        showContactInfo = chkContact.checked;
-        showForm = chkForm.checked;
-        showCta = chkCta.checked;
-        galleryUrls = galInputs.map(i => i.value);
-        displayContact = { mail: displayMail.value, tel: displayTel.value, address: displayAddress.value };
-        formReceiverEmail = formReceiverInput.value;
-        headingSize = parseFloat(headingSlider.value);
-        headingVal.innerText = headingSize + 'rem';
-        btnColor = btnColorPicker.value;
-        btnText = btnTextInp.value;
-        copyrightName = copyrightInp.value;
-        // CTA
-        ctaImageUrl = ctaImageUrlInp.value;
-        ctaHeading = ctaHeadingInp.value;
-        ctaDetail = ctaDetailInp.value;
-        ctaShowButton = ctaShowButtonChk.checked;
-        ctaBtnText = ctaBtnTextInp.value;
-        ctaBtnLink = ctaBtnLinkInp.value;
-        if (currentBgType === 'gradient') {
-            selectedGradient = customGradInput.value;
-        }
-    }
-    
-    function getBackgroundCSS() {
-        if (currentBgType === 'color') return `background: ${bgColor};`;
-        if (currentBgType === 'gradient') return `background: ${selectedGradient};`;
-        if (currentBgType === 'image') {
-            if (bgRepeat === 'cover') return `background: url('${bgImageUrl}') center/cover no-repeat;`;
-            if (bgRepeat === 'contain') return `background: url('${bgImageUrl}') center/contain no-repeat;`;
-            return `background: url('${bgImageUrl}') repeat;`;
-        }
+    function getBackgroundCSS(){
+        if(currentBgType==='color') return `background: ${bgColor};`;
+        if(currentBgType==='gradient') return `background: ${selectedGradient};`;
+        if(currentBgType==='image'){ if(bgRepeat==='cover') return `background: url('${bgImageUrl}') center/cover no-repeat;`; if(bgRepeat==='contain') return `background: url('${bgImageUrl}') center/contain no-repeat;`; return `background: url('${bgImageUrl}') repeat;`; }
         return '';
     }
-    
-    // ---------- グラデーションタブ構築 ----------
-    function buildGradTabs() {
-        gradTabsDiv.innerHTML = '';
-        for (const [name, grad] of Object.entries(gradients)) {
-            const tab = document.createElement('div');
-            tab.className = 'grad-tab';
-            tab.innerText = name;
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.grad-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                selectedGradient = grad;
-                customGradInput.value = grad;
-                gradPreview.style.background = grad;
-                updatePreview();
-            });
+    function buildGradTabs(){
+        gradTabsDiv.innerHTML='';
+        for(const[name,grad] of Object.entries(gradients)){
+            const tab=document.createElement('div'); tab.className='grad-tab'; tab.innerText=name;
+            tab.addEventListener('click',()=>{ document.querySelectorAll('.grad-tab').forEach(t=>t.classList.remove('active')); tab.classList.add('active'); selectedGradient=grad; customGradInput.value=grad; gradPreview.style.background=grad; updatePreview(); });
             gradTabsDiv.appendChild(tab);
         }
-        customGradInput.addEventListener('input', () => {
-            document.querySelectorAll('.grad-tab').forEach(t => t.classList.remove('active'));
-            selectedGradient = customGradInput.value;
-            gradPreview.style.background = customGradInput.value;
-            updatePreview();
-        });
-        if (gradTabsDiv.firstChild) gradTabsDiv.firstChild.classList.add('active');
-        gradPreview.style.background = gradients["シルバー"];
-        customGradInput.value = gradients["シルバー"];
+        customGradInput.addEventListener('input',()=>{ document.querySelectorAll('.grad-tab').forEach(t=>t.classList.remove('active')); selectedGradient=customGradInput.value; gradPreview.style.background=customGradInput.value; updatePreview(); });
+        if(gradTabsDiv.firstChild) gradTabsDiv.firstChild.classList.add('active');
+        gradPreview.style.background=gradients["シルバー"]; customGradInput.value=gradients["シルバー"];
     }
     
-    // ---------- メイン生成関数（CTAボタン表示切替＋リンク先URL対応）----------
-    function generateHTML() {
+    function generateHTML(){
         updateVariables();
-        const bgCss = getBackgroundCSS();
-        const heroHtml = showHero ? `<div class="hero"><h1>${escapeHtml(heroTitle)}</h1><p class="hero-desc">${escapeHtml(heroDesc)}</p></div>` : '';
-        
-        let subHtml = '';
-        if (showSub && subBlocks.length) {
-            subHtml = `<div class="subcontents">${subBlocks.map(block => `
-                <div class="subcard" style="background: ${block.bgColor}; border-radius: 24px; padding: 1.2rem; margin-bottom: 1.5rem;">
-                    ${block.imgUrl ? `<img src="${block.imgUrl}" class="subimg" style="width:100%; border-radius:20px; margin-bottom:1rem; max-height:200px; object-fit:cover;" alt="">` : ''}
-                    <h3 style="font-size: ${block.fontSize}rem;">${escapeHtml(block.title)}</h3>
-                    <p>${escapeHtml(block.content)}</p>
-                </div>
-            `).join('')}</div>`;
+        const bgCss=getBackgroundCSS();
+        const heroHtml=showHero?`<div class="hero"><h1>${escapeHtml(heroTitle)}</h1><p class="hero-desc">${escapeHtml(heroDesc)}</p></div>`:'';
+        let subHtml='';
+        if(showSub && subBlocks.length){
+            subHtml=`<div class="subcontents">${subBlocks.map(block=>`<div class="subcard" style="background:${block.bgColor}; border-radius:24px; padding:1.2rem; margin-bottom:1.5rem;">${block.imgUrl?`<img src="${block.imgUrl}" class="subimg" style="width:100%; border-radius:20px; margin-bottom:1rem; max-height:200px; object-fit:cover;">`:''}<h3 style="font-size:${block.fontSize}rem;">${escapeHtml(block.title)}</h3><p>${escapeHtml(block.content)}</p></div>`).join('')}</div>`;
         }
-        
-        let galleryHtml = '';
-        if (showGallery) {
-            let items = '';
-            for (let i = 0; i < 3; i++) {
-                const url = galleryUrls[i];
-                if (url && url.match(/^https?:\/\//)) {
-                    items += `<div class="gallery-item" style="flex:1; aspect-ratio:1/1; border-radius:24px; overflow:hidden; background:#f5f5f7;"><img src="${url}" style="width:100%; height:100%; object-fit:cover;" alt="gallery"></div>`;
-                } else {
-                    items += `<div class="gallery-item no-img" style="flex:1; aspect-ratio:1/1; border-radius:24px; background: repeating-linear-gradient(45deg, #e5e5ea, #e5e5ea 10px, #f5f5f7 10px, #f5f5f7 20px);"></div>`;
-                }
-            }
-            galleryHtml = `<div class="section"><h2 style="font-size:1.3rem; border-left:4px solid #007aff; padding-left:0.8rem; margin:1.5rem 0 1rem;">ギャラリー</h2><div class="gallery" style="display:flex; gap:1rem; flex-wrap:wrap;">${items}</div></div>`;
+        let galleryHtml='';
+        if(showGallery){
+            let items='';
+            for(let i=0;i<3;i++){ const url=galleryUrls[i]; if(url && url.match(/^https?:\/\//)) items+=`<div class="gallery-item" style="flex:1; aspect-ratio:1/1; border-radius:24px; overflow:hidden;"><img src="${url}" style="width:100%; height:100%; object-fit:cover;"></div>`; else items+=`<div class="gallery-item no-img" style="flex:1; aspect-ratio:1/1; border-radius:24px; background: repeating-linear-gradient(45deg, #e5e5ea, #e5e5ea 10px, #f5f5f7 10px, #f5f5f7 20px);"></div>`; }
+            galleryHtml=`<div class="section"><h2 style="font-size:1.3rem; border-left:4px solid #007aff; padding-left:0.8rem; margin:1.5rem 0 1rem;">ギャラリー</h2><div class="gallery" style="display:flex; gap:1rem; flex-wrap:wrap;">${items}</div></div>`;
         }
-        
-        let contactHtml = '';
-        if (showContactInfo && (displayContact.mail || displayContact.tel || displayContact.address)) {
-            contactHtml = `<div class="section"><h2 style="font-size:1.3rem; border-left:4px solid #007aff; padding-left:0.8rem; margin:1.5rem 0 1rem;">連絡先</h2><div class="contact-detail">${displayContact.mail ? `<p>📧 ${escapeHtml(displayContact.mail)}</p>` : ''}${displayContact.tel ? `<p>📞 ${escapeHtml(displayContact.tel)}</p>` : ''}${displayContact.address ? `<p>🏠 ${escapeHtml(displayContact.address)}</p>` : ''}</div></div>`;
-        }
-        
-        const formHtml = showForm ? `
+        let contactHtml='';
+        if(showContactInfo && (displayContact.mail||displayContact.tel||displayContact.address)) contactHtml=`<div class="section"><h2 style="font-size:1.3rem; border-left:4px solid #007aff; padding-left:0.8rem; margin:1.5rem 0 1rem;">連絡先</h2><div class="contact-detail">${displayContact.mail?`<p>メール: ${escapeHtml(displayContact.mail)}</p>`:''}${displayContact.tel?`<p>電話: ${escapeHtml(displayContact.tel)}</p>`:''}${displayContact.address?`<p>住所: ${escapeHtml(displayContact.address)}</p>`:''}</div></div>`;
+        const formHtml=showForm?`
         <div class="section"><h2 style="font-size:1.3rem; border-left:4px solid #007aff; padding-left:0.8rem; margin:1.5rem 0 1rem;">お問い合わせ</h2>
         <form class="demo-form" onsubmit="sendInquiry(); return false;" style="display:flex; flex-direction:column; gap:0.6rem; max-width:500px;">
             <input type="text" id="formName" placeholder="お名前" required style="padding:0.6rem 1rem; border-radius:40px; border:1px solid #d2d2d7;">
             <input type="email" id="formEmail" placeholder="メールアドレス" required style="padding:0.6rem 1rem; border-radius:40px; border:1px solid #d2d2d7;">
             <input type="tel" id="formPhone" placeholder="電話番号 (任意)" style="padding:0.6rem 1rem; border-radius:40px; border:1px solid #d2d2d7;">
             <textarea id="formMessage" rows="3" placeholder="メッセージ" required style="padding:0.6rem 1rem; border-radius:20px; border:1px solid #d2d2d7;"></textarea>
-            <button type="submit" style="background:${btnColor}; color:white; border:none; padding:0.6rem 1.2rem; border-radius:40px; font-weight:600; cursor:pointer;">${escapeHtml(btnText)}</button>
+            <button type="submit" style="background:${btnColor}; color:white; border:none; padding:0.6rem 1.2rem; border-radius:40px; font-weight:600;">${escapeHtml(btnText)}</button>
         </form>
-        <script>
-            function sendInquiry() {
-                const name = document.getElementById('formName').value.trim();
-                const email = document.getElementById('formEmail').value.trim();
-                const phone = document.getElementById('formPhone').value.trim();
-                const message = document.getElementById('formMessage').value.trim();
-                if (!name || !email || !message) { alert('必須項目を入力してください。'); return; }
-                const body = "お名前: " + name + "\\nメールアドレス: " + email + "\\n電話番号: " + phone + "\\nメッセージ: " + message;
-                window.location.href = "mailto:${escapeHtml(formReceiverEmail)}?subject=お問い合わせ from " + encodeURIComponent(name) + "&body=" + encodeURIComponent(body);
-                alert('メールアプリが起動します。送信してください。');
-            }
-        <\/script>
-        </div>` : '';
-        
-        // CTAセクション（ボタン表示切替＋リンク先URL対応）
-        let ctaHtml = '';
-        if (showCta) {
-            const hasImage = ctaImageUrl && ctaImageUrl.trim() !== '';
-            const hasDetail = ctaDetail && ctaDetail.trim() !== '';
-            const buttonHtml = (ctaShowButton && ctaBtnText.trim() !== '') 
-                ? `<a href="${escapeHtml(ctaBtnLink)}" target="_blank" rel="noopener noreferrer" class="cta-btn" style="display:inline-block; background:${btnColor}; color:white; border:none; padding:0.6rem 1.8rem; border-radius:40px; font-weight:600; cursor:pointer; text-decoration:none;">${escapeHtml(ctaBtnText)}</a>`
-                : '';
-            
-            if (hasImage) {
-                ctaHtml = `
-                <div class="cta-block" style="background: #f9f9fb; border-radius: 36px; padding: 1.8rem; margin: 2rem 0; display: flex; flex-wrap: wrap; gap: 2rem; align-items: center;">
-                    <div style="flex: 1; min-width: 150px;"><img src="${escapeHtml(ctaImageUrl)}" style="width: 100%; border-radius: 28px; object-fit: cover;" alt="CTA"></div>
-                    <div style="flex: 2;">
-                        <h3 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem;">${escapeHtml(ctaHeading)}</h3>
-                        ${hasDetail ? `<p style="margin-bottom: 1rem; color: #4a4a4e;">${escapeHtml(ctaDetail)}</p>` : ''}
-                        ${buttonHtml}
-                    </div>
-                </div>`;
+        <script>function sendInquiry(){ const name=document.getElementById('formName').value.trim(); const email=document.getElementById('formEmail').value.trim(); const phone=document.getElementById('formPhone').value.trim(); const message=document.getElementById('formMessage').value.trim(); if(!name||!email||!message){ alert('必須項目を入力してください。'); return; } const body="お名前: "+name+"\\nメールアドレス: "+email+"\\n電話番号: "+phone+"\\nメッセージ: "+message; window.location.href="mailto:${escapeHtml(formReceiverEmail)}?subject=お問い合わせ from "+encodeURIComponent(name)+"&body="+encodeURIComponent(body); alert('メールアプリが起動します。送信してください。'); }<\/script>
+        </div>`:'';
+        let ctaHtml='';
+        if(showCta){
+            const hasImage=ctaImageUrl && ctaImageUrl.trim()!=='';
+            const hasDetail=ctaDetail && ctaDetail.trim()!=='';
+            const buttonHtml=(ctaShowButton && ctaBtnText.trim()!=='')?`<a href="${escapeHtml(ctaBtnLink)}" target="_blank" rel="noopener noreferrer" class="cta-btn" style="display:inline-block; background:${btnColor}; color:white; border:none; padding:0.6rem 1.8rem; border-radius:40px; font-weight:600; text-decoration:none;">${escapeHtml(ctaBtnText)}</a>`:'';
+            if(hasImage){
+                ctaHtml=`<div class="cta-block" style="background:rgba(249,249,251,0.8); backdrop-filter:blur(12px); border-radius:36px; padding:1.8rem; margin:2rem 0; display:flex; flex-wrap:wrap; gap:2rem; align-items:center;"><div style="flex:1; min-width:150px;"><img src="${escapeHtml(ctaImageUrl)}" style="width:100%; border-radius:28px; object-fit:cover;"></div><div style="flex:2;"><h3 style="font-size:1.8rem; font-weight:700;">${escapeHtml(ctaHeading)}</h3>${hasDetail?`<p style="margin-bottom:1rem;">${escapeHtml(ctaDetail)}</p>`:''}${buttonHtml}</div></div>`;
             } else {
-                ctaHtml = `
-                <div class="cta-block" style="text-align: center; background: #f9f9fb; border-radius: 36px; padding: 1.8rem; margin: 2rem 0;">
-                    <h3 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem;">${escapeHtml(ctaHeading)}</h3>
-                    ${hasDetail ? `<p style="margin-bottom: 1rem; color: #4a4a4e;">${escapeHtml(ctaDetail)}</p>` : ''}
-                    ${buttonHtml}
-                </div>`;
+                ctaHtml=`<div class="cta-block" style="text-align:center; background:rgba(249,249,251,0.8); backdrop-filter:blur(12px); border-radius:36px; padding:1.8rem; margin:2rem 0;"><h3 style="font-size:1.8rem; font-weight:700;">${escapeHtml(ctaHeading)}</h3>${hasDetail?`<p style="margin-bottom:1rem;">${escapeHtml(ctaDetail)}</p>`:''}${buttonHtml}</div>`;
             }
         }
-        
-        const enabledLegal = legalItems.filter(item => item.enabled);
-        let legalLinksHtml = '', modalsHtml = '';
-        if (enabledLegal.length) {
-            legalLinksHtml = `<div class="legal-links" style="text-align:center; margin:2rem 0 1rem; font-size:0.8rem;">${enabledLegal.map((item) => `<a href="#" onclick="document.getElementById('modal_${item.id}').style.display='flex';return false;" style="color:#007aff; text-decoration:none; margin:0 0.3rem;">${escapeHtml(item.label)}</a>`).join(' | ')}</div>`;
-            modalsHtml = enabledLegal.map(item => `
-            <div id="modal_${item.id}" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
-                <div style="background:white; max-width:600px; margin:5% auto; padding:1.5rem; border-radius:24px; max-height:80%; overflow:auto;">
-                    <h3>${escapeHtml(item.label)}</h3>
-                    <p style="white-space:pre-wrap;">${escapeHtml(item.content)}</p>
-                    <button onclick="document.getElementById('modal_${item.id}').style.display='none'" style="margin-top:1rem; padding:0.4rem 1rem;">閉じる</button>
-                </div>
-            </div>`).join('');
+        const enabledLegal=legalItems.filter(item=>item.enabled);
+        let legalLinksHtml='', modalsHtml='';
+        if(enabledLegal.length){
+            legalLinksHtml=`<div class="legal-links" style="text-align:center; margin:2rem 0 1rem;">${enabledLegal.map(item=>`<a href="#" onclick="document.getElementById('modal_${item.id}').style.display='flex';return false;">${escapeHtml(item.label)}</a>`).join(' | ')}</div>`;
+            modalsHtml=enabledLegal.map(item=>`<div id="modal_${item.id}" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;"><div style="background:white; max-width:600px; margin:5% auto; padding:1.5rem; border-radius:24px;"><h3>${escapeHtml(item.label)}</h3><p style="white-space:pre-wrap;">${escapeHtml(item.content)}</p><button onclick="document.getElementById('modal_${item.id}').style.display='none'">閉じる</button></div></div>`).join('');
         }
-        
-        let copyrightHtml = `© ${new Date().getFullYear()} Site Studio`;
-        if (copyrightName.trim()) copyrightHtml += ` / ${escapeHtml(copyrightName.trim())}`;
+        let copyrightHtml=`© ${new Date().getFullYear()} Site Studio`; if(copyrightName.trim()) copyrightHtml+=` / ${escapeHtml(copyrightName.trim())}`;
         
         return `<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>${escapeHtml(heroTitle)}</title>
     <style>
         * { margin:0; padding:0; box-sizing: border-box; }
         body {
             ${bgCss}
-            font-family: -apple-system, system-ui, sans-serif;
+            font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
             color: #1d1d1f;
             padding: 1.5rem;
             min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 36px;
+            border: 1px solid rgba(255,255,255,0.4);
         }
         .container {
             max-width: 1100px;
@@ -769,6 +606,46 @@
             backdrop-filter: blur(12px);
             border-radius: 36px;
             padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp 0.6s ease forwards; }
+        .hover-scale { transition: transform 0.2s; }
+        .hover-scale:hover { transform: scale(1.02); }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .logo { font-size: 1.2rem; font-weight: 600; }
+        .desktop-nav { display: flex; gap: 1.5rem; }
+        .desktop-nav a { text-decoration: none; color: #1d1d1f; font-weight: 500; }
+        .desktop-nav a:hover { color: #007aff; }
+        .menu-icon { display: none; width: 30px; height: 30px; cursor: pointer; flex-direction: column; justify-content: space-between; z-index: 101; }
+        .menu-icon span { display: block; height: 2px; width: 100%; background: #1d1d1f; border-radius: 2px; }
+        .drawer {
+            position: fixed; top: 0; right: -280px; width: 260px; height: 100%;
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(20px);
+            transition: right 0.3s; z-index: 1000; padding: 2rem 1rem;
+        }
+        .drawer.open { right: 0; }
+        .drawer ul { list-style: none; }
+        .drawer li { margin: 1.5rem 0; }
+        .drawer a { text-decoration: none; color: #1d1d1f; font-weight: 500; }
+        .drawer-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.3); opacity:0; visibility:hidden; transition:0.2s; z-index:999;
+        }
+        .drawer-overlay.open { opacity:1; visibility:visible; }
+        @media (max-width: 768px) {
+            .desktop-nav { display: none; }
+            .menu-icon { display: flex; }
         }
         h1 { font-size: ${headingSize}rem; font-weight: 700; margin-bottom: 0.5rem; }
         .hero-desc { font-size: 1rem; color: #6e6e73; }
@@ -780,7 +657,7 @@
         .gallery-item img { width:100%; height:100%; object-fit: cover; }
         .no-img { background: repeating-linear-gradient(45deg, #e5e5ea, #e5e5ea 10px, #f5f5f7 10px, #f5f5f7 20px); }
         .demo-form input, .demo-form textarea { padding: 0.6rem 1rem; border-radius: 40px; border: 1px solid #d2d2d7; background: white; width:100%; margin-bottom:0.5rem; }
-        .demo-form button, .cta-btn { background: ${btnColor}; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 40px; font-weight: 600; cursor: pointer; }
+        .demo-form button, .cta-btn { background: ${btnColor}; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 40px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
         .cta-block { transition: 0.2s; }
         .legal-links { text-align: center; margin: 2rem 0 1rem; font-size: 0.8rem; }
         .legal-links a { color: #007aff; text-decoration: none; margin: 0 0.3rem; }
@@ -790,8 +667,30 @@
 </head>
 <body>
 <div class="container">
+    <div class="navbar">
+        <div class="logo">${escapeHtml(heroTitle.substring(0,20))}</div>
+        <div class="desktop-nav">
+            <a href="#" onclick="smoothScroll('.hero'); return false;">ホーム</a>
+            ${showSub ? `<a href="#" onclick="smoothScroll('.subcontents'); return false;">コンテンツ</a>` : ''}
+            ${showGallery ? `<a href="#" onclick="smoothScroll('.gallery'); return false;">ギャラリー</a>` : ''}
+            <a href="#" onclick="smoothScroll('.demo-form, .contact-detail'); return false;">お問い合わせ</a>
+            <a href="#" onclick="smoothScroll('.legal-links'); return false;">規約</a>
+        </div>
+        <div class="menu-icon" id="menuBtn" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+    </div>
+    <div class="drawer" id="drawer">
+        <ul>
+            <li><a href="#" onclick="smoothScroll('.hero'); closeDrawer(); return false;">ホーム</a></li>
+            ${showSub ? `<li><a href="#" onclick="smoothScroll('.subcontents'); closeDrawer(); return false;">コンテンツ</a></li>` : ''}
+            ${showGallery ? `<li><a href="#" onclick="smoothScroll('.gallery'); closeDrawer(); return false;">ギャラリー</a></li>` : ''}
+            <li><a href="#" onclick="smoothScroll('.demo-form, .contact-detail'); closeDrawer(); return false;">お問い合わせ</a></li>
+            <li><a href="#" onclick="smoothScroll('.legal-links'); closeDrawer(); return false;">規約</a></li>
+        </ul>
+    </div>
+    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
     ${heroHtml}
-    ${subHtml}
+    ${showSub ? `<div class="subcontents">${subHtml}</div>` : ''}
     ${galleryHtml}
     ${contactHtml}
     ${formHtml}
@@ -800,71 +699,52 @@
     ${modalsHtml}
     <footer>${copyrightHtml}</footer>
 </div>
+<script>
+    function toggleMenu() { const drawer = document.getElementById('drawer'); const overlay = document.getElementById('drawerOverlay'); drawer.classList.toggle('open'); overlay.classList.toggle('open'); }
+    function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); }
+    function smoothScroll(selector) { closeDrawer(); const el = document.querySelector(selector); if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    document.addEventListener('click', function(e) { const drawer = document.getElementById('drawer'); const btn = document.getElementById('menuBtn'); if (!drawer.contains(e.target) && !btn.contains(e.target) && drawer.classList.contains('open')) closeDrawer(); });
+    const fadeElements = document.querySelectorAll('.hero, .subcard, .gallery-item, .cta-block');
+    const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('fade-up'); }); }, { threshold: 0.1 });
+    fadeElements.forEach(el => observer.observe(el));
+<\/script>
 </body>
 </html>`;
     }
     
-    // ---------- プレビュー更新 ----------
-    function updatePreview() {
-        const html = generateHTML();
-        if (previewFrame) {
-            previewFrame.srcdoc = html;
-        }
-    }
+    function updatePreview(){ const html=generateHTML(); if(previewFrame) previewFrame.srcdoc=html; }
     
-    // ---------- イベント登録 ----------
-    function bindEvents() {
-        bgTypeSelect.addEventListener('change', () => { toggleBgFields(); updatePreview(); });
+    function bindEvents(){
+        bgTypeSelect.addEventListener('change',()=>{ toggleBgFields(); updatePreview(); });
         bgColorInput.addEventListener('input', updatePreview);
         bgImageInput.addEventListener('input', updatePreview);
         bgRepeatSelect.addEventListener('change', updatePreview);
         heroTitleInp.addEventListener('input', updatePreview);
         heroDescInp.addEventListener('input', updatePreview);
-        chkHero.addEventListener('change', () => { showHero = chkHero.checked; updatePreview(); });
-        chkSub.addEventListener('change', () => { showSub = chkSub.checked; updatePreview(); });
-        chkGallery.addEventListener('change', () => { showGallery = chkGallery.checked; toggleSubSettings(); updatePreview(); });
-        chkContact.addEventListener('change', () => { showContactInfo = chkContact.checked; toggleSubSettings(); updatePreview(); });
-        chkForm.addEventListener('change', () => { showForm = chkForm.checked; toggleSubSettings(); updatePreview(); });
-        chkCta.addEventListener('change', () => { showCta = chkCta.checked; toggleSubSettings(); updatePreview(); });
-        galInputs.forEach(inp => inp.addEventListener('input', updatePreview));
-        displayMail.addEventListener('input', updatePreview);
-        displayTel.addEventListener('input', updatePreview);
-        displayAddress.addEventListener('input', updatePreview);
-        formReceiverInput.addEventListener('input', updatePreview);
-        headingSlider.addEventListener('input', () => { headingVal.innerText = headingSlider.value + 'rem'; updatePreview(); });
-        btnColorPicker.addEventListener('input', updatePreview);
-        btnTextInp.addEventListener('input', updatePreview);
-        copyrightInp.addEventListener('input', updatePreview);
-        ctaImageUrlInp.addEventListener('input', updatePreview);
-        ctaHeadingInp.addEventListener('input', updatePreview);
-        ctaDetailInp.addEventListener('input', updatePreview);
-        ctaShowButtonChk.addEventListener('change', updatePreview);
-        ctaBtnTextInp.addEventListener('input', updatePreview);
-        ctaBtnLinkInp.addEventListener('input', updatePreview);
-        
-        addSubBtn.addEventListener('click', () => {
-            subBlocks.push({ title: "新しいブロック", content: "説明を入力", imgUrl: "", fontSize: 1, bgColor: "#ffffff" });
-            renderSubBlocksUI();
-            bindRandomButtons();
-            updatePreview();
-        });
-        
-        downloadBtn.addEventListener('click', async () => {
-            const html = generateHTML();
-            const zip = new JSZip();
-            zip.file("index.html", html);
-            zip.file(".nojekyll", "");
-            const blob = await zip.generateAsync({ type: "blob" });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `site_studio_cta_${Date.now()}.zip`;
-            link.click();
-            URL.revokeObjectURL(link.href);
-        });
+        chkHero.addEventListener('change',()=>{ showHero=chkHero.checked; updatePreview(); });
+        chkSub.addEventListener('change',()=>{ showSub=chkSub.checked; updatePreview(); });
+        chkGallery.addEventListener('change',()=>{ showGallery=chkGallery.checked; toggleSubSettings(); updatePreview(); });
+        chkContact.addEventListener('change',()=>{ showContactInfo=chkContact.checked; toggleSubSettings(); updatePreview(); });
+        chkForm.addEventListener('change',()=>{ showForm=chkForm.checked; toggleSubSettings(); updatePreview(); });
+        chkCta.addEventListener('change',()=>{ showCta=chkCta.checked; toggleSubSettings(); updatePreview(); });
+        galInputs.forEach(inp=>inp.addEventListener('input',updatePreview));
+        displayMail.addEventListener('input',updatePreview); displayTel.addEventListener('input',updatePreview); displayAddress.addEventListener('input',updatePreview);
+        formReceiverInput.addEventListener('input',updatePreview);
+        headingSlider.addEventListener('input',()=>{ headingVal.innerText=headingSlider.value+'rem'; updatePreview(); });
+        btnColorPicker.addEventListener('input',updatePreview);
+        btnTextInp.addEventListener('input',updatePreview);
+        copyrightInp.addEventListener('input',updatePreview);
+        ctaImageUrlInp.addEventListener('input',updatePreview);
+        ctaHeadingInp.addEventListener('input',updatePreview);
+        ctaDetailInp.addEventListener('input',updatePreview);
+        ctaShowButtonChk.addEventListener('change',updatePreview);
+        ctaBtnTextInp.addEventListener('input',updatePreview);
+        ctaBtnLinkInp.addEventListener('input',updatePreview);
+        addSubBtn.addEventListener('click',()=>{ subBlocks.push({ title:"新しいブロック", content:"説明を入力", imgUrl:"", fontSize:1, bgColor:"#ffffff" }); renderSubBlocksUI(); bindRandomButtons(); updatePreview(); });
+        downloadBtn.addEventListener('click',async()=>{ const html=generateHTML(); const zip=new JSZip(); zip.file("index.html",html); zip.file(".nojekyll",""); const blob=await zip.generateAsync({type:"blob"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`site_studio_${Date.now()}.zip`; a.click(); URL.revokeObjectURL(a.href); });
     }
     
-    // ---------- 初期化 ----------
-    function init() {
+    function init(){
         renderSubBlocksUI();
         renderLegalUI();
         buildGradTabs();
