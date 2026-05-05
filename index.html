@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="robots" content="noindex, nofollow">
     <title>Site Studio 2026</title>
     <style>
         * {
@@ -213,6 +214,15 @@
             border-radius: 16px;
             margin-top: 0.5rem;
         }
+        .password-notice {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            color: #e65100;
+        }
         .preview-frame {
             width: 100%;
             height: 640px;
@@ -286,7 +296,7 @@
 <div class="container">
     <div class="generator-header">
         <h1>Site Studio 2026</h1>
-        <p>サイトを自由に編集し、ZIPファイルで書き出す</p>
+        <p>ポートフォリオ作品 – 無断使用禁止 / ダウンロードにはパスワードが必要です</p>
     </div>
     <div class="two-columns">
         <!-- 左: 設定パネル -->
@@ -365,6 +375,12 @@
             <div class="setting-row"><label>追加名義</label><input type="text" id="copyrightName" placeholder="あなたの名前"></div>
             
             <button class="download" id="downloadBtn">ZIPダウンロード (.nojekyll 同梱)</button>
+            <div class="password-notice">
+                <strong>🔒 パスワード保護について</strong><br>
+                この作品はポートフォリオ用のため、無断使用を防ぐためにパスワードを設定しています。<br>
+                ダウンロードするには正しいパスワードの入力が必要です。<br>
+                ※ パスワードをお持ちでない方は、09081101654までご連絡ください。
+            </div>
             <div class="info-note">ZIPを展開したら、下のガイドを見て公開してください。</div>
         </div>
         
@@ -375,7 +391,7 @@
         </div>
     </div>
     
-    <!-- 公開ガイド (初心者向け、詳細ステップ) -->
+    <!-- 公開ガイド -->
     <div class="guide-section">
         <div class="guide-title">ZIPを公開する方法 (初心者でも簡単)</div>
         <div class="guide-steps">
@@ -424,7 +440,10 @@
 
 <script>
 (function(){
-    // グラデーション定義
+    // ========== ダウンロードパスワード設定 ==========
+    const DOWNLOAD_PASSWORD = "Site Studio 2026";  // 半角スペース含む、大文字小文字区別あり
+    
+    // グラデーション定義 (その他機能は元のコードを完全に維持)
     const gradients = {
         "シルバー": "linear-gradient(145deg, #f5f5f7, #e8e8ed)",
         "ブルー": "linear-gradient(135deg, #eef2ff, #d9e2ff)",
@@ -436,7 +455,7 @@
     let showHero = true, showSub = true, showGallery = false, showContactInfo = false, showForm = false, showCta = false;
     let galleryUrls = ['', '', ''];
     let displayContact = { mail: '', tel: '', address: '' };
-    let formReceiverEmail = '';  // 初期は空（ユーザー入力必須）
+    let formReceiverEmail = '';
     let headingSize = 2, btnColor = '#007aff', btnText = '送信', copyrightName = '';
     let ctaImageUrl = '', ctaHeading = '詳細を見る', ctaDetail = '', ctaShowButton = true, ctaBtnText = 'お問い合わせ', ctaBtnLink = '#';
     let subBlocks = [{ title: "革新的なデザイン", content: "美しく直感的なレイアウトを提供します。", imgUrl: "", fontSize: 1, bgColor: "#ffffff" }];
@@ -448,7 +467,7 @@
         { id: "contactLegal", label: "お問い合わせ先（法人情報）", enabled: true, content: "運営会社名、メールアドレスなどを記述してください。" }
     ];
     
-    // DOM要素取得
+    // DOM要素
     const bgTypeSelect = document.getElementById('bgType'), colorRow = document.getElementById('colorRow'), gradientRow = document.getElementById('gradientRow'), imageRow = document.getElementById('imageRow');
     const bgColorInput = document.getElementById('bgColor'), gradTabsDiv = document.getElementById('gradTabs'), gradPreview = document.getElementById('gradPreview'), customGradInput = document.getElementById('customGradient');
     const bgImageInput = document.getElementById('bgImageUrl'), bgRepeatSelect = document.getElementById('bgRepeat'), heroTitleInp = document.getElementById('heroTitle'), heroDescInp = document.getElementById('heroDesc');
@@ -712,7 +731,6 @@
 </html>`;
     }
     
-    // プレビュー更新（Blob URL 方式で確実に動作）
     let previewUrl = null;
     function updatePreview(){
         try {
@@ -725,6 +743,30 @@
             console.error(err);
             previewFrame.srcdoc = '<html><body style="padding:2rem;">プレビュー生成エラー</body></html>';
         }
+    }
+    
+    // ========== パスワード付きダウンロード処理 ==========
+    async function handleDownload() {
+        const password = prompt(
+            "🔒 パスワードを入力してください\n\nこの作品はポートフォリオ用のため、無断使用を防ぐためにパスワードを設定しています。\n正しいパスワードを入力するとZIPファイルをダウンロードできます。"
+        );
+        if (password === null) return; // キャンセル
+        if (password !== DOWNLOAD_PASSWORD) {
+            alert("パスワードが間違っています。ダウンロードできません。");
+            return;
+        }
+        // パスワード正解 → ZIP生成
+        const html = generateHTML();
+        const zip = new JSZip();
+        zip.file("index.html", html);
+        zip.file(".nojekyll", "");
+        const blob = await zip.generateAsync({ type: "blob" });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `site_studio_${Date.now()}.zip`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        alert("ダウンロードを開始します。");
     }
     
     function bindEvents(){
@@ -754,7 +796,8 @@
         ctaBtnTextInp.addEventListener('input',updatePreview);
         ctaBtnLinkInp.addEventListener('input',updatePreview);
         addSubBtn.addEventListener('click',()=>{ subBlocks.push({ title:"新しいブロック", content:"説明を入力", imgUrl:"", fontSize:1, bgColor:"#ffffff" }); renderSubBlocksUI(); bindRandomButtons(); updatePreview(); });
-        downloadBtn.addEventListener('click',async()=>{ const html=generateHTML(); const zip=new JSZip(); zip.file("index.html",html); zip.file(".nojekyll",""); const blob=await zip.generateAsync({type:"blob"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`site_studio_${Date.now()}.zip`; a.click(); URL.revokeObjectURL(a.href); });
+        // ダウンロードボタンにパスワードチェックを追加
+        downloadBtn.addEventListener('click', handleDownload);
     }
     
     function init(){
