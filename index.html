@@ -338,8 +338,8 @@
             <div class="section-title">お問い合わせフォーム</div>
             <div class="check-group"><input type="checkbox" id="secForm"> フォームを表示</div>
             <div id="formSettings" style="margin-left:1rem; display:none;">
-                <div class="setting-row"><label>送信先メール</label><input type="email" id="formReceiverEmail" placeholder="your@email.com" value="info@example.com"></div>
-                <div class="info-note">※ 送信ボタンを押すとメールアプリが開きます（mailto: 形式）</div>
+                <div class="setting-row"><label>送信先メール</label><input type="email" id="formReceiverEmail" placeholder="your@email.com" value=""></div>
+                <div class="info-note">※ ここに入力したメールアドレスが、お問い合わせの送信先になります。</div>
             </div>
             
             <div class="section-title">お知らせ・案内 (CTA)</div>
@@ -436,7 +436,7 @@
     let showHero = true, showSub = true, showGallery = false, showContactInfo = false, showForm = false, showCta = false;
     let galleryUrls = ['', '', ''];
     let displayContact = { mail: '', tel: '', address: '' };
-    let formReceiverEmail = 'info@example.com';
+    let formReceiverEmail = '';  // 初期は空（ユーザー入力必須）
     let headingSize = 2, btnColor = '#007aff', btnText = '送信', copyrightName = '';
     let ctaImageUrl = '', ctaHeading = '詳細を見る', ctaDetail = '', ctaShowButton = true, ctaBtnText = 'お問い合わせ', ctaBtnLink = '#';
     let subBlocks = [{ title: "革新的なデザイン", content: "美しく直感的なレイアウトを提供します。", imgUrl: "", fontSize: 1, bgColor: "#ffffff" }];
@@ -448,7 +448,7 @@
         { id: "contactLegal", label: "お問い合わせ先（法人情報）", enabled: true, content: "運営会社名、メールアドレスなどを記述してください。" }
     ];
     
-    // DOM要素取得（省略せずに全て定義）
+    // DOM要素取得
     const bgTypeSelect = document.getElementById('bgType'), colorRow = document.getElementById('colorRow'), gradientRow = document.getElementById('gradientRow'), imageRow = document.getElementById('imageRow');
     const bgColorInput = document.getElementById('bgColor'), gradTabsDiv = document.getElementById('gradTabs'), gradPreview = document.getElementById('gradPreview'), customGradInput = document.getElementById('customGradient');
     const bgImageInput = document.getElementById('bgImageUrl'), bgRepeatSelect = document.getElementById('bgRepeat'), heroTitleInp = document.getElementById('heroTitle'), heroDescInp = document.getElementById('heroDesc');
@@ -712,7 +712,20 @@
 </html>`;
     }
     
-    function updatePreview(){ const html=generateHTML(); if(previewFrame) previewFrame.srcdoc=html; }
+    // プレビュー更新（Blob URL 方式で確実に動作）
+    let previewUrl = null;
+    function updatePreview(){
+        try {
+            const html = generateHTML();
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            const blob = new Blob([html], { type: 'text/html' });
+            previewUrl = URL.createObjectURL(blob);
+            previewFrame.src = previewUrl;
+        } catch (err) {
+            console.error(err);
+            previewFrame.srcdoc = '<html><body style="padding:2rem;">プレビュー生成エラー</body></html>';
+        }
+    }
     
     function bindEvents(){
         bgTypeSelect.addEventListener('change',()=>{ toggleBgFields(); updatePreview(); });
